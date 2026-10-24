@@ -1,0 +1,23 @@
+{
+  "character": "Nino v6 pendant legibility",
+  "source": "Nino_v6_pendant_legible.blend",
+  "derived_from": "Nino_v5_runtime_ready.blend",
+  "changes": [
+    "pendant case and ring enlarged by 12 percent",
+    "legacy central glow hidden to remove visual competition",
+    "individual icon sizing for consistent screen coverage",
+    "higher-contrast emissive cyan, gold and pink materials",
+    "nine full-body and nine close-up validation renders"
+  ],
+  "icon_geometry_scales": {
+    "presente": 1.2,
+    "curioso": 1.44,
+    "eureka": 1.26,
+    "pensando": 1.38,
+    "cochilando": 1.38,
+    "concentrado": 1.3,
+    "confuso": 1.42,
+    "acolhedor": 1.36,
+    "orgulhoso": 1.34
+  }
+}

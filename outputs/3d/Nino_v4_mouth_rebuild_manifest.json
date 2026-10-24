@@ -1,0 +1,59 @@
+{
+  "character": "Nino v4 mouth rebuild",
+  "source": "Nino_v4_mouth_rebuild.blend",
+  "derived_from": "Nino_v2_refined.blend",
+  "changes": [
+    "legacy flattened-sphere mouth hidden but preserved",
+    "separate canine philtrum and upper-lip seams",
+    "small independent mouth cavity with ten facial shape keys",
+    "independent tongue reserved for open-mouth expressions",
+    "nine expression previews plus four face close-ups"
+  ],
+  "expressions": [
+    {
+      "id": "presente",
+      "action": "mood_presente",
+      "preview": "mouth_v4_expressions/Nino_presente.png"
+    },
+    {
+      "id": "curioso",
+      "action": "mood_curioso",
+      "preview": "mouth_v4_expressions/Nino_curioso.png"
+    },
+    {
+      "id": "eureka",
+      "action": "mood_eureka",
+      "preview": "mouth_v4_expressions/Nino_eureka.png"
+    },
+    {
+      "id": "pensando",
+      "action": "mood_pensando",
+      "preview": "mouth_v4_expressions/Nino_pensando.png"
+    },
+    {
+      "id": "cochilando",
+      "action": "mood_cochilando",
+      "preview": "mouth_v4_expressions/Nino_cochilando.png"
+    },
+    {
+      "id": "concentrado",
+      "action": "mood_concentrado",
+      "preview": "mouth_v4_expressions/Nino_concentrado.png"
+    },
+    {
+      "id": "confuso",
+      "action": "mood_confuso",
+      "preview": "mouth_v4_expressions/Nino_confuso.png"
+    },
+    {
+      "id": "acolhedor",
+      "action": "mood_acolhedor",
+      "preview": "mouth_v4_expressions/Nino_acolhedor.png"
+    },
+    {
+      "id": "orgulhoso",
+      "action": "mood_orgulhoso",
+      "preview": "mouth_v4_expressions/Nino_orgulhoso.png"
+    }
+  ]
+}

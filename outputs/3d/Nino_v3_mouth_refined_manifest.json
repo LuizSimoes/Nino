@@ -1,0 +1,58 @@
+{
+  "character": "Nino v3 mouth refinement",
+  "source": "Nino_v3_mouth_refined.blend",
+  "derived_from": "Nino_v2_refined.blend",
+  "changes": [
+    "narrower and darker mouth cavity",
+    "subtle lower mouth contour",
+    "thinner smile creases",
+    "rebalanced speech and emotion shape-key values"
+  ],
+  "expressions": [
+    {
+      "id": "presente",
+      "action": "mood_presente",
+      "preview": "mouth_refined_expressions/Nino_presente.png"
+    },
+    {
+      "id": "curioso",
+      "action": "mood_curioso",
+      "preview": "mouth_refined_expressions/Nino_curioso.png"
+    },
+    {
+      "id": "eureka",
+      "action": "mood_eureka",
+      "preview": "mouth_refined_expressions/Nino_eureka.png"
+    },
+    {
+      "id": "pensando",
+      "action": "mood_pensando",
+      "preview": "mouth_refined_expressions/Nino_pensando.png"
+    },
+    {
+      "id": "cochilando",
+      "action": "mood_cochilando",
+      "preview": "mouth_refined_expressions/Nino_cochilando.png"
+    },
+    {
+      "id": "concentrado",
+      "action": "mood_concentrado",
+      "preview": "mouth_refined_expressions/Nino_concentrado.png"
+    },
+    {
+      "id": "confuso",
+      "action": "mood_confuso",
+      "preview": "mouth_refined_expressions/Nino_confuso.png"
+    },
+    {
+      "id": "acolhedor",
+      "action": "mood_acolhedor",
+      "preview": "mouth_refined_expressions/Nino_acolhedor.png"
+    },
+    {
+      "id": "orgulhoso",
+      "action": "mood_orgulhoso",
+      "preview": "mouth_refined_expressions/Nino_orgulhoso.png"
+    }
+  ]
+}

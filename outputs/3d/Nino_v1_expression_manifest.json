@@ -1,0 +1,69 @@
+{
+  "character": "Nino v1",
+  "source": "Nino_v1_expressions.blend",
+  "expressions": [
+    {
+      "id": "presente",
+      "label": "Presente",
+      "armature_action": "mood_presente",
+      "pendant_symbol": "ponto ciano",
+      "preview": "expressions/Nino_presente.png"
+    },
+    {
+      "id": "curioso",
+      "label": "Curioso",
+      "armature_action": "mood_curioso",
+      "pendant_symbol": "?",
+      "preview": "expressions/Nino_curioso.png"
+    },
+    {
+      "id": "eureka",
+      "label": "Eureca",
+      "armature_action": "mood_eureka",
+      "pendant_symbol": "lâmpada dourada com três raios",
+      "preview": "expressions/Nino_eureka.png"
+    },
+    {
+      "id": "pensando",
+      "label": "Pensando",
+      "armature_action": "mood_pensando",
+      "pendant_symbol": "reticências",
+      "preview": "expressions/Nino_pensando.png"
+    },
+    {
+      "id": "cochilando",
+      "label": "Cochilando",
+      "armature_action": "mood_cochilando",
+      "pendant_symbol": "Z",
+      "preview": "expressions/Nino_cochilando.png"
+    },
+    {
+      "id": "concentrado",
+      "label": "Concentrado",
+      "armature_action": "mood_concentrado",
+      "pendant_symbol": "alvo",
+      "preview": "expressions/Nino_concentrado.png"
+    },
+    {
+      "id": "confuso",
+      "label": "Confuso",
+      "armature_action": "mood_confuso",
+      "pendant_symbol": "¿",
+      "preview": "expressions/Nino_confuso.png"
+    },
+    {
+      "id": "acolhedor",
+      "label": "Acolhedor",
+      "armature_action": "mood_acolhedor",
+      "pendant_symbol": "coração",
+      "preview": "expressions/Nino_acolhedor.png"
+    },
+    {
+      "id": "orgulhoso",
+      "label": "Orgulhoso",
+      "armature_action": "mood_orgulhoso",
+      "pendant_symbol": "estrela",
+      "preview": "expressions/Nino_orgulhoso.png"
+    }
+  ]
+}

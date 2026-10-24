@@ -1,0 +1,66 @@
+{
+  "character": "Nino v2 refined blockout",
+  "source": "Nino_v2_refined.blend",
+  "derived_from": "Nino_v1_expressions.blend",
+  "refinements": [
+    "smaller mouth",
+    "thinner brows",
+    "subtle procedural fur bump",
+    "short asymmetric forelock",
+    "inner-ear volumes",
+    "wrist IK controls keyed in nine mood actions"
+  ],
+  "ik_controls": [
+    "hand_ik_L",
+    "hand_ik_R",
+    "elbow_pole_L",
+    "elbow_pole_R"
+  ],
+  "expressions": [
+    {
+      "id": "presente",
+      "action": "mood_presente",
+      "preview": "refined_expressions/Nino_presente.png"
+    },
+    {
+      "id": "curioso",
+      "action": "mood_curioso",
+      "preview": "refined_expressions/Nino_curioso.png"
+    },
+    {
+      "id": "eureka",
+      "action": "mood_eureka",
+      "preview": "refined_expressions/Nino_eureka.png"
+    },
+    {
+      "id": "pensando",
+      "action": "mood_pensando",
+      "preview": "refined_expressions/Nino_pensando.png"
+    },
+    {
+      "id": "cochilando",
+      "action": "mood_cochilando",
+      "preview": "refined_expressions/Nino_cochilando.png"
+    },
+    {
+      "id": "concentrado",
+      "action": "mood_concentrado",
+      "preview": "refined_expressions/Nino_concentrado.png"
+    },
+    {
+      "id": "confuso",
+      "action": "mood_confuso",
+      "preview": "refined_expressions/Nino_confuso.png"
+    },
+    {
+      "id": "acolhedor",
+      "action": "mood_acolhedor",
+      "preview": "refined_expressions/Nino_acolhedor.png"
+    },
+    {
+      "id": "orgulhoso",
+      "action": "mood_orgulhoso",
+      "preview": "refined_expressions/Nino_orgulhoso.png"
+    }
+  ]
+}

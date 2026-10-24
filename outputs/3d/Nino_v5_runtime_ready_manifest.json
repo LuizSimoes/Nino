@@ -1,0 +1,76 @@
+{
+  "character": "Nino v5 runtime ready",
+  "source": "Nino_v5_runtime_ready.blend",
+  "derived_from": "Nino_v4_mouth_rebuild.blend",
+  "talk_action": "talk_idle_v4",
+  "talk_frames": [
+    1,
+    5,
+    13,
+    17,
+    29
+  ],
+  "sleep_eye_actions": [
+    "mood_cochilando_closed_lids",
+    "mood_cochilando_eye_details_L",
+    "mood_cochilando_eye_details_R"
+  ],
+  "pendant_icons": {
+    "presente": "ponto ciano",
+    "curioso": "?",
+    "eureka": "lâmpada dourada com raios",
+    "pensando": "reticências",
+    "cochilando": "Z",
+    "concentrado": "alvo",
+    "confuso": "? inclinado",
+    "acolhedor": "coração",
+    "orgulhoso": "estrela"
+  },
+  "moods": [
+    {
+      "id": "presente",
+      "body_action": "mood_presente",
+      "pendant_action": "mood_presente_pendant"
+    },
+    {
+      "id": "curioso",
+      "body_action": "mood_curioso",
+      "pendant_action": "mood_curioso_pendant"
+    },
+    {
+      "id": "eureka",
+      "body_action": "mood_eureka",
+      "pendant_action": "mood_eureka_pendant"
+    },
+    {
+      "id": "pensando",
+      "body_action": "mood_pensando",
+      "pendant_action": "mood_pensando_pendant"
+    },
+    {
+      "id": "cochilando",
+      "body_action": "mood_cochilando",
+      "pendant_action": "mood_cochilando_pendant"
+    },
+    {
+      "id": "concentrado",
+      "body_action": "mood_concentrado",
+      "pendant_action": "mood_concentrado_pendant"
+    },
+    {
+      "id": "confuso",
+      "body_action": "mood_confuso",
+      "pendant_action": "mood_confuso_pendant"
+    },
+    {
+      "id": "acolhedor",
+      "body_action": "mood_acolhedor",
+      "pendant_action": "mood_acolhedor_pendant"
+    },
+    {
+      "id": "orgulhoso",
+      "body_action": "mood_orgulhoso",
+      "pendant_action": "mood_orgulhoso_pendant"
+    }
+  ]
+}
