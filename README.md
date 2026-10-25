@@ -30,7 +30,16 @@ O projeto funciona sem configuração, usando a voz local do macOS. Para experim
 
 A chave permanece no servidor local e nunca é incluída no código enviado ao navegador. `.env.local` está ignorado pelo Git.
 
-> A rota de voz incluída em `vite.config.ts` atende ao desenvolvimento local. Uma publicação na internet deve mover essa rota para um backend seguro e configurar a chave somente no ambiente do servidor.
+## Publicar na Vercel
+
+O projeto inclui uma função segura em `api/realtime-session.js`. Ela recebe apenas a oferta WebRTC, usa a chave no servidor e devolve a resposta SDP; a chave padrão nunca chega ao navegador.
+
+1. Importe o repositório do GitHub na Vercel e mantenha o framework **Vite**.
+2. Em **Settings → Environment Variables**, crie `OPENAI_API_KEY` com a chave do projeto.
+3. Faça a primeira publicação e copie o endereço final `https://...vercel.app`.
+4. Crie `NINO_ALLOWED_ORIGIN` com esse endereço, sem barra no final, e publique novamente.
+
+A rota publicada aceita somente `POST`, limita tamanho, origem e frequência básica, não armazena respostas e usa o fluxo WebRTC unificado recomendado pela OpenAI. Para uma campanha pública com grande tráfego, acrescente autenticação e rate limiting persistente no provedor.
 
 ## O que experimentar
 
@@ -72,6 +81,7 @@ Consulte [`docs/ESCOPO_ETAPA_1.md`](docs/ESCOPO_ETAPA_1.md) para os critérios d
 ## Estrutura para versionamento
 
 - `src/`: aplicação React, carregador Three.js do Nino e alternativa vetorial.
+- `api/realtime-session.js`: backend serverless da voz neural para publicação na Vercel.
 - `public/models/nino-v6.glb`: cópia do modelo atual servida pelo aplicativo.
 - `docs/`: escopo, decisões e lacunas.
 - `outputs/`: relatório e pacote visual/técnico do Nino v1.
@@ -79,5 +89,6 @@ Consulte [`docs/ESCOPO_ETAPA_1.md`](docs/ESCOPO_ETAPA_1.md) para os critérios d
 - `blender/`: scripts reproduzíveis para validar o Blender, reconstruir o blockout, gerar as expressões e criar a variante refinada.
 - `scripts/repair_nino_glb_eyes.mjs`: recompõe no GLB atual as peças oculares completas preservadas na versão compatível anterior.
 - `package.json` e `package-lock.json`: dependências reproduzíveis.
+- `vercel.json`: configuração de build, função e cabeçalhos de segurança da publicação.
 
 `node_modules`, `dist` e `work` são recriados localmente e permanecem fora do Git por meio do `.gitignore`.
