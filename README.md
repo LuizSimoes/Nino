@@ -54,9 +54,9 @@ A rota publicada aceita somente `POST`, limita tamanho, origem e frequência bá
 
 ## Estado atual
 
-- A interface carrega o modelo real [`Nino_v6_complete.glb`](outputs/3d/Nino_v6_complete.glb) com Three.js e mantém a ilustração vetorial como alternativa automática de carregamento.
+- A interface usa como personagem principal a ilustração vetorial dourada escolhida durante os testes. O modelo [`Nino_v6_complete.glb`](outputs/3d/Nino_v6_complete.glb) permanece preservado como base 3D para evoluções futuras.
 - Os nove botões controlam as poses corporais, as expressões faciais, o piscar com pálpebras douradas, os olhos fechados do cochilo e os símbolos do pingente no modelo 3D.
-- A boca combina os visemas `MBP`, `A`, `E`, `O`, `U` e `L` com a amplitude real do áudio neural. Ela fecha durante pausas, retoma na frase seguinte e preserva a expressão emocional após a fala.
+- A boca vetorial acompanha a amplitude real do áudio neural, fecha durante pausas, retoma na frase seguinte e preserva a expressão emocional após a fala.
 - O olhar acompanha discretamente o ponteiro por rotação tridimensional do personagem.
 - O blockout estabelece proporções, materiais, peças faciais, esqueleto, testes de fala e nove ações emocionais. Escultura, retopologia e pesos finais continuam como etapas posteriores de acabamento.
 - A voz tenta usar o modelo neural `gpt-realtime-2.1-mini` por WebRTC quando uma chave local está configurada; sem ela, usa automaticamente o sintetizador do navegador em português.

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
-import { Nino3D } from './Nino3D'
 import { NinoRealtimeVoice } from './realtimeVoice'
 
 type NinoMood = 'presente' | 'curioso' | 'animado' | 'pensando' | 'cochilando' | 'concentrado' | 'confuso' | 'acolhedor' | 'orgulhoso'
@@ -441,7 +440,15 @@ function NinoFaceRobot3D({ mood, gaze, blinking, look }: { mood: NinoMood; gaze:
   )
 }
 
-function NinoFace({ mood, gaze, blinking, look }: { mood: NinoMood; gaze: Gaze; blinking: boolean; look: LookOffset | null }) {
+function NinoFace({ mood, gaze, blinking, look, speaking, speechLevel }: {
+  mood: NinoMood
+  gaze: Gaze
+  blinking: boolean
+  look: LookOffset | null
+  speaking: boolean
+  speechLevel: { current: number }
+}) {
+  const speakingMouthRef = useRef<SVGGElement>(null)
   const asleep = mood === 'cochilando'
   const curious = mood === 'curioso'
   const animated = mood === 'animado'
@@ -466,6 +473,23 @@ function NinoFace({ mood, gaze, blinking, look }: { mood: NinoMood; gaze: Gaze; 
     orgulhoso: { arms: ['M112 252Q96 281 123 309', 'M208 252Q224 281 197 309'], paws: [[130, 311], [190, 311]] },
   }
   const pose = poses[mood]
+
+  useEffect(() => {
+    const mouth = speakingMouthRef.current
+    if (!speaking || !mouth) return
+
+    let frame = 0
+    const animateMouth = () => {
+      const measured = speechLevel.current
+      const fallback = 0.5 + Math.sin(performance.now() * 0.018) * 0.32
+      const level = Math.max(0, Math.min(1, measured < 0 ? fallback : measured))
+      const openness = 0.12 + level * 0.88
+      mouth.style.transform = `scaleY(${openness})`
+      frame = window.requestAnimationFrame(animateMouth)
+    }
+    frame = window.requestAnimationFrame(animateMouth)
+    return () => window.cancelAnimationFrame(frame)
+  }, [speaking, speechLevel])
 
   const mouthPath = asleep ? 'M140 190Q160 184 180 190' :
     thinking ? 'M139 190Q150 180 160 190Q170 200 181 187' :
@@ -580,7 +604,12 @@ function NinoFace({ mood, gaze, blinking, look }: { mood: NinoMood; gaze: Gaze; 
           <path className="dog-nose" d="M145 154Q160 145 175 154Q177 166 160 173Q143 166 145 154Z" />
           <path className="dog-nose-glint" d="M150 155Q156 151 161 153" />
 
-          {animated || mood === 'presente' ? (
+          {speaking ? (
+            <g ref={speakingMouthRef} className="dog-mouth dog-mouth--open dog-speaking-mouth">
+              <path d="M128 178Q160 209 192 178Q190 216 160 229Q130 216 128 178Z" />
+              <path className="dog-tongue" d="M145 207Q160 198 175 207Q172 226 160 230Q148 226 145 207Z" />
+            </g>
+          ) : animated || mood === 'presente' ? (
             <g className={`dog-mouth ${animated ? 'dog-mouth--open' : 'dog-mouth--smile'}`}>
               <path d={animated ? 'M125 177Q160 211 195 177Q194 217 160 229Q126 217 125 177Z' : 'M132 180Q160 207 188 180Q185 211 160 219Q135 211 132 180Z'} />
               <path className="dog-tongue" d={animated ? 'M143 207Q160 196 177 207Q174 231 160 235Q146 231 143 207Z' : 'M147 204Q160 196 173 204Q170 220 160 223Q150 220 147 204Z'} />
@@ -619,7 +648,7 @@ function App() {
   const [voiceLabOpen, setVoiceLabOpen] = useState(false)
   const [voiceEngine, setVoiceEngine] = useState<VoiceEngine>('local')
   const [speaking, setSpeaking] = useState(false)
-  const [speechBeat, setSpeechBeat] = useState(0)
+  const [, setSpeechBeat] = useState(0)
   const activityTimer = useRef<number | null>(null)
   const suggestionTimer = useRef<number | null>(null)
   const speechToken = useRef(0)
@@ -902,14 +931,17 @@ function App() {
           <div className="ambient ambient--one" />
           <div className="ambient ambient--two" />
           <div className="mood-aura" aria-hidden="true" />
-          <Nino3D
-            mood={mood}
-            look={lookOffset}
-            speaking={speaking}
-            speechBeat={speechBeat}
-            speechLevel={speechLevel}
-            fallback={<NinoFace key={mood} mood={mood} gaze={gaze} blinking={blinking} look={lookOffset} />}
-          />
+          <div className={`nino-3d nino-illustrated ${speaking ? 'nino-illustrated--speaking' : ''}`}>
+            <NinoFace
+              key={mood}
+              mood={mood}
+              gaze={gaze}
+              blinking={blinking}
+              look={lookOffset}
+              speaking={speaking}
+              speechLevel={speechLevel}
+            />
+          </div>
           <div className={moreOpen ? 'nino-caption nino-caption--raised' : 'nino-caption'}>
             <span className="caption-indicator" />
             <span className="caption-text">{moodCaptions[mood]}</span>
