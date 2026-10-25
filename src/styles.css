@@ -1870,6 +1870,11 @@ footer { display: none; }
 .chat-image-tools small { font-size: inherit; }
 .chat-image-tools button { border: 1px solid #55536f; border-radius: 50%; background: transparent; color: #eee; min-width: 28px; height: 28px; cursor: pointer; }
 .chat-image-sent { max-width: 100%; max-height: 100px; object-fit: contain; align-self: flex-start; border-radius: 6px; }
+.chat-attachment-name { overflow-wrap: anywhere; min-width: 0; font-size: 10px; }
+.chat-code-result { display: block; min-width: 0; max-width: 100%; margin-top: 8px; }
+.chat-code-result button { padding: 7px 10px; border: 1px solid #6b7990; border-radius: 7px; background: #20283d; color: #a3eee5; cursor: pointer; font: inherit; }
+.chat-code-result pre { max-width: 100%; overflow-x: auto; margin: 8px 0 0; padding: 10px; border-radius: 8px; background: #0b1020; color: #e5eef5; white-space: pre; font: 12px/1.5 ui-monospace, monospace; }
+.chat-bubble { min-width: 0; }
 
 .chat-log {
   min-height: 80px;

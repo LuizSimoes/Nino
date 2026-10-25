@@ -57,9 +57,12 @@ A rota publicada aceita somente `POST`, limita tamanho, origem e frequência bá
 
 ## Estado atual
 
-- A conversa aceita uma imagem PNG, JPEG ou WebP de até 10 MB, com prévia local antes do envio. O navegador redimensiona a imagem para até 1600 px e a converte para JPEG de até 1 MB; o servidor valida formato, assinatura e tamanho.
+- O botão único **+ Anexar** identifica imagem ou código/texto pela extensão e valida o conteúdo antes do envio. Aceita PNG, JPEG e WebP até 10 MB, ou `.ino`, `.c`, `.cpp`, `.h`, `.hpp`, `.py`, `.js`, `.ts`, `.json` e `.txt` em UTF-8 até 64 KB e 24 mil caracteres. Arquivos maiores são recusados por inteiro, sem truncamento. Um anexo pode ser selecionado por vez.
+- O navegador redimensiona imagens para até 1600 px e as converte para JPEG de até 1 MB; o servidor valida formato, assinatura e tamanho.
 - A imagem selecionada acompanha as próximas perguntas até ser removida ou substituída. As miniaturas permanecem apenas no histórico em memória da página; nenhum arquivo é criado no servidor do projeto. Ao recarregar, as imagens são descartadas. O envio à OpenAI ocorre somente ao enviar uma mensagem, inclusive quando há apenas uma imagem selecionada.
-- A integração de visão segue o formato `input_image` da Responses API. Testes locais cobrem validação e montagem da requisição; a análise real de imagem permanece pendente de validação, pois o upload do arquivo de teste foi bloqueado pela política do navegador durante a implementação.
+- A integração de visão segue o formato `input_image` da Responses API; o usuário validou o envio e a análise de um esquema com dois transistores e três capacitores.
+- Código selecionado acompanha as próximas perguntas até ser removido ou substituído, somente em memória da página. Não é executado. A conversa aceita até 4 mil caracteres de mensagem; correções aparecem em bloco separado, com indentação e botão de copiar, e a voz lê apenas a explicação curta. O histórico preserva o código das respostas para revisões seguintes.
+- `npm run test:attachments` verifica o leitor real de arquivos, UTF-8, limites, formatos inválidos e preservação integral do texto sem transmissão externa. A seleção de um arquivo de código no navegador ainda exige validação manual: o upload automatizado foi rejeitado pela política do navegador.
 
 Para conferir contexto e histórico sem chamadas externas, execute `npm run test:bancada`. Para exercitar quatro cenários na API publicada, execute `npm run test:bancada -- --endpoint=https://nino-phi.vercel.app/api/nino-chat`; essa opção usa o serviço configurado e pode gerar consumo. Os cenários verificam contexto, continuidade de diagnóstico, acionamento de carga e firmware sem bloqueio. A avaliação por termos detecta regressões básicas e não certifica a correção de um circuito.
 

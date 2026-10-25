@@ -106,15 +106,19 @@ export default async function ninoChat(request, response) {
 
   try {
     const payload = await readJson(request)
-    const conversation = sanitizeConversation(payload?.message, payload?.history, payload?.context, payload?.image)
+    const conversation = sanitizeConversation(payload?.message, payload?.history, payload?.context, payload?.image, payload?.code)
     if (!conversation.message || conversation.message.length > NINO_CHAT_MAX_MESSAGE_CHARS) {
-      sendJson(response, 400, { error: 'Escreva uma mensagem de até 500 caracteres.' })
+      sendJson(response, 400, { error: 'Escreva uma mensagem de até 4000 caracteres.' })
       return
     }
 
     const reply = await createNinoReply({ apiKey, ...conversation })
     sendJson(response, 200, reply)
   } catch (error) {
+    if (error instanceof TypeError && ['CODE_INVALID', 'ATTACHMENT_CONFLICT'].includes(error.message)) {
+      sendJson(response, 400, { error: 'Anexo inválido. Envie uma imagem ou um arquivo de código/texto UTF-8.' })
+      return
+    }
     if (error instanceof TypeError && error.message === 'IMAGE_INVALID') {
       sendJson(response, 400, { error: 'Imagem inválida. Use PNG, JPEG ou WebP.' })
       return

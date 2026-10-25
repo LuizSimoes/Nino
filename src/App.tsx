@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { NinoRealtimeVoice } from './realtimeVoice'
 import { askNino, type NinoChatMessage } from './ninoChat'
-import { prepareLabImage } from './labImage'
+import { prepareLabAttachment, attachmentAccept, type LabAttachment } from './labAttachment'
 
 type NinoMood = 'presente' | 'curioso' | 'animado' | 'pensando' | 'cochilando' | 'concentrado' | 'confuso' | 'acolhedor' | 'orgulhoso'
 type Gaze = 'esquerda' | 'centro' | 'direita'
@@ -712,7 +712,9 @@ function App() {
   const [chatInput, setChatInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
   const [chatError, setChatError] = useState<string | null>(null)
-  const [chatImage, setChatImage] = useState<string | undefined>()
+  const [attachment, setAttachment] = useState<LabAttachment | undefined>()
+  const chatImage = attachment?.kind === 'image' ? attachment.image : undefined
+  const chatCode = attachment?.kind === 'code' ? attachment.code : undefined
   const [imagePreparing, setImagePreparing] = useState(false)
   const [labContext, setLabContext] = useState<LabContext>(storedLabContext)
   const [labContextOpen, setLabContextOpen] = useState(false)
@@ -797,11 +799,15 @@ function App() {
   }
 
   const sendChatMessage = async () => {
-    const message = chatInput.trim() || (chatImage ? 'Analise esta imagem da bancada: o que é visível e qual o próximo teste útil?' : '')
+    const message = chatInput.trim() || (chatImage ? 'Analise esta imagem da bancada: o que é visível e qual o próximo teste útil?' : chatCode ? 'Revise o arquivo de código anexado e identifique problemas e próximos testes.' : '')
     if (!message || chatLoading || imagePreparing) return
+    if (message.length > 4000) {
+      setChatError('A mensagem ultrapassa 4 mil caracteres. Anexe o código como arquivo para enviá-lo inteiro.')
+      return
+    }
 
     const history = chatMessages.slice(-8)
-    const userMessage: NinoChatMessage = { role: 'user', content: message, image: chatImage }
+    const userMessage: NinoChatMessage = { role: 'user', content: message, image: chatImage, attachmentName: attachment?.name }
     setChatMessages((current) => [...current, userMessage].slice(-10))
     setChatInput('')
     setChatError(null)
@@ -815,8 +821,8 @@ function App() {
     chatAbort.current = controller
 
     try {
-      const answer = await askNino(message, history, labContext, controller.signal, chatImage)
-      const assistantMessage: NinoChatMessage = { role: 'assistant', content: answer.reply }
+      const answer = await askNino(message, history, labContext, controller.signal, chatImage, chatCode)
+      const assistantMessage: NinoChatMessage = { role: 'assistant', content: answer.reply, code: answer.code }
       setChatMessages((current) => [...current, assistantMessage].slice(-10))
       setMood(answer.mood)
       setGaze(answer.mood === 'pensando' ? 'direita' : 'centro')
@@ -1090,51 +1096,59 @@ function App() {
           </div>
           <div className="chat-log" role="log" aria-live="polite" ref={chatLog}>
             {chatMessages.map((message, index) => (
-              <p className={`chat-bubble chat-bubble--${message.role}`} key={`${message.role}-${index}`}>
+              <div className={`chat-bubble chat-bubble--${message.role}`} key={`${message.role}-${index}`}>
                 <strong>{message.role === 'assistant' ? 'Nino' : 'Você'}</strong>
                 {message.image && <img className="chat-image-sent" src={message.image} alt="Imagem enviada da bancada" />}
+                {message.attachmentName && <small className="chat-attachment-name">Anexo: {message.attachmentName}</small>}
                 <span>{message.content}</span>
-              </p>
+                {message.code && <div className="chat-code-result"><button type="button" onClick={async (event) => {
+                  const button = event.currentTarget
+                  try { await navigator.clipboard.writeText(message.code!); button.textContent = 'Copiado' }
+                  catch { button.textContent = 'Selecione o código para copiar' }
+                }}>Copiar código</button><pre><code>{message.code}</code></pre></div>}
+              </div>
             ))}
             {chatLoading && <p className="chat-thinking"><span /><span /><span /> Pensando…</p>}
           </div>
           {chatError && <p className="chat-error" role="alert">{chatError}</p>}
           <div className="chat-image-tools">
             <label className="chat-image-picker">
-              {imagePreparing ? 'Preparando…' : chatImage ? 'Trocar imagem' : '+ Imagem'}
-              <input type="file" accept="image/png,image/jpeg,image/webp" aria-label="Anexar imagem da bancada" disabled={chatLoading || imagePreparing} onChange={async (event) => {
+              {imagePreparing ? 'Preparando…' : attachment ? 'Trocar anexo' : '+ Anexar'}
+              <input type="file" accept={attachmentAccept} aria-label="Anexar imagem ou código" disabled={chatLoading || imagePreparing} onChange={async (event) => {
                 const file = event.currentTarget.files?.[0]
                 event.currentTarget.value = ''
                 if (!file) return
                 setImagePreparing(true)
                 setChatError(null)
-                try { setChatImage(await prepareLabImage(file)) }
-                catch (error) { setChatError(error instanceof Error ? error.message : 'Não consegui preparar a imagem.') }
+                try { setAttachment(await prepareLabAttachment(file)) }
+                catch (error) { setChatError(error instanceof Error ? error.message : 'Não consegui preparar o anexo.') }
                 finally { setImagePreparing(false) }
               }} />
             </label>
-            {chatImage ? <><img src={chatImage} alt="Prévia da imagem selecionada" /><span>Usada nas próximas perguntas.<br />Enviada ao tocar na seta.</span><button type="button" aria-label="Remover imagem" disabled={chatLoading} onClick={() => setChatImage(undefined)}>×</button></> : <small>Esquema ou foto · até 10 MB</small>}
+            {attachment ? <>{chatImage && <img src={chatImage} alt="Prévia da imagem selecionada" />}<span className="chat-attachment-name" title={attachment.name}>{attachment.name}<br />{chatCode ? `${chatCode.text.length} caracteres · código` : 'Imagem'} · usado nas próximas perguntas.</span><button type="button" aria-label="Remover anexo" disabled={chatLoading} onClick={() => setAttachment(undefined)}>×</button></> : <small>Imagem ou código · um arquivo por vez</small>}
           </div>
           <form className="chat-composer" onSubmit={(event) => { event.preventDefault(); void sendChatMessage() }}>
             <textarea
               ref={chatInputRef}
               value={chatInput}
-              onChange={(event) => setChatInput(event.target.value.slice(0, 500))}
+              onChange={(event) => {
+                setChatInput(event.target.value)
+                setChatError(event.target.value.length > 4000 ? 'A mensagem ultrapassa 4 mil caracteres. Anexe o código como arquivo para enviá-lo inteiro.' : null)
+              }}
               onKeyDown={(event) => {
                 if (event.key === 'Enter' && !event.shiftKey) {
                   event.preventDefault()
                   void sendChatMessage()
                 }
               }}
-              maxLength={500}
               rows={2}
               autoFocus
               placeholder="Descreva o circuito, firmware ou teste…"
               aria-label="Mensagem para o Nino"
             />
-            <button type="submit" disabled={chatLoading || imagePreparing || (!chatInput.trim() && !chatImage)} aria-label="Enviar mensagem">↑</button>
+            <button type="submit" disabled={chatLoading || imagePreparing || chatInput.length > 4000 || (!chatInput.trim() && !attachment)} aria-label="Enviar mensagem">↑</button>
           </form>
-          <small className="chat-privacy">{labContextCount ? 'Contexto temporário nesta aba' : 'Sem memória persistente'} · texto e imagens enviados são processados pela OpenAI</small>
+          <small className="chat-privacy">{labContextCount ? 'Contexto temporário nesta aba' : 'Sem memória persistente'} · mensagens e anexos enviados são processados pela OpenAI</small>
         </section>
       )}
 

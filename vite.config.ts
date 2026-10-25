@@ -48,17 +48,22 @@ function realtimeVoicePlugin(apiKey: string): Plugin {
       }
 
       try {
-        const body = JSON.parse(await readRequestBody(voiceRequest, NINO_CHAT_MAX_BODY_BYTES)) as { message?: unknown; history?: unknown; context?: unknown; image?: unknown }
-        const conversation = sanitizeConversation(body.message, body.history, body.context, body.image)
-        if (!conversation.message || conversation.message.length > 500) {
+        const body = JSON.parse(await readRequestBody(voiceRequest, NINO_CHAT_MAX_BODY_BYTES)) as { message?: unknown; history?: unknown; context?: unknown; image?: unknown; code?: unknown }
+        const conversation = sanitizeConversation(body.message, body.history, body.context, body.image, body.code)
+        if (!conversation.message || conversation.message.length > 4000) {
           response.statusCode = 400
-          response.end(JSON.stringify({ error: 'Escreva uma mensagem de até 500 caracteres.' }))
+          response.end(JSON.stringify({ error: 'Escreva uma mensagem de até 4000 caracteres.' }))
           return
         }
         const reply = await createNinoReply({ apiKey, ...conversation, safetyIdentifier: 'nino-local-prototype' })
         response.statusCode = 200
         response.end(JSON.stringify(reply))
       } catch (error) {
+        if (error instanceof TypeError && ['CODE_INVALID', 'ATTACHMENT_CONFLICT'].includes(error.message)) {
+          response.statusCode = 400
+          response.end(JSON.stringify({ error: 'Anexo inválido. Use uma imagem ou código/texto UTF-8.' }))
+          return
+        }
         if (error instanceof TypeError && error.message === 'IMAGE_INVALID') {
           response.statusCode = 400
           response.end(JSON.stringify({ error: 'Imagem inválida. Use PNG, JPEG ou WebP.' }))
@@ -66,7 +71,7 @@ function realtimeVoicePlugin(apiKey: string): Plugin {
         }
         if (error instanceof RangeError) {
           response.statusCode = 413
-          response.end(JSON.stringify({ error: 'Imagem muito grande. Use uma imagem de até 1 MB após preparação.' }))
+          response.end(JSON.stringify({ error: 'Anexo muito grande. Use código até 64 KB/24 mil caracteres ou uma imagem menor.' }))
           return
         }
         response.statusCode = 502

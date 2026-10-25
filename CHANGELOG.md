@@ -2,6 +2,10 @@
 
 ## Próxima atualização
 
+- Botão unificado **+ Anexar** aceita imagens e arquivos de código/texto, com identificação automática e limites explícitos.
+- Código recebido integralmente até 64 KB/24 mil caracteres; correções formatadas em bloco próprio, com cópia e preservação no histórico. A voz lê a explicação.
+- Campo da conversa ampliado de 500 para 4000 caracteres.
+
 - Anexos de imagem com prévia, troca e remoção, preparação local e validação no servidor.
 - Imagem selecionada acompanha perguntas seguintes; Nino orientado a distinguir observações visuais de hipóteses e medições.
 - Layout em janelas baixas ajustado para preservar cabeçalho e área de escrita com o novo controle.

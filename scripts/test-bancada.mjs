@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { sanitizeConversation, sanitizeLabContext, sanitizeImage, createNinoReply } from '../server/nino-chat-core.js'
+import { sanitizeConversation, sanitizeLabContext, sanitizeImage, sanitizeCode, createNinoReply } from '../server/nino-chat-core.js'
 
 // Os testes locais não usam chave nem fazem chamadas externas.
 assert.deepEqual(sanitizeLabContext(null), { objective: '', platform: '', power: '', instruments: '' })
@@ -33,6 +33,26 @@ try {
   await createNinoReply({ apiKey: 'test', message: 'Analise', history: [], image: testImage })
 } finally { globalThis.fetch = realFetch }
 console.log('Validação local: imagens inválidas/grandes rejeitadas e entrada multimodal aprovada.')
+
+const sourceCode = { name: 'teste.ino', text: 'void setup() {}\nvoid loop() {\n  delay(5000);\n}\n' }
+assert.deepEqual(sanitizeCode(sourceCode), sourceCode)
+assert.throws(() => sanitizeCode({ name: 'teste.exe', text: 'binary' }), /CODE_INVALID/)
+assert.throws(() => sanitizeCode({ name: '../teste.ino', text: 'void loop(){}' }), /CODE_INVALID/)
+assert.throws(() => sanitizeCode({ name: 'teste.ino', text: '\u0000binary' }), /CODE_INVALID/)
+assert.throws(() => sanitizeCode({ name: 'teste.ino', text: 'x'.repeat(24001) }), /CODE_TOO_LARGE/)
+assert.throws(() => sanitizeConversation('teste', [], {}, testImage, sourceCode), /ATTACHMENT_CONFLICT/)
+const corrected = 'void setup() {}\nvoid loop() {\n  unsigned long now_ms = millis();\n}\n'
+try {
+  globalThis.fetch = async (_url, options) => {
+    const request = JSON.parse(options.body)
+    assert.ok(request.input.at(-1).content.includes(JSON.stringify(sourceCode)))
+    return new Response(JSON.stringify({ output_text: JSON.stringify({ reply: 'Removi o bloqueio.', mood: 'concentrado', code: corrected }) }))
+  }
+  const result = await createNinoReply({ apiKey: 'test', message: 'Corrija', history: [], code: sourceCode })
+  assert.equal(result.code, corrected)
+  assert.equal(result.reply, 'Removi o bloqueio.')
+} finally { globalThis.fetch = realFetch }
+console.log('Validação local: arquivo integral, limites e formatação do código aprovados.')
 
 // Opt-in explícito: exercita a rota real e pode consumir a API configurada.
 const endpoint = process.argv.find((arg) => arg.startsWith('--endpoint='))?.slice(11)

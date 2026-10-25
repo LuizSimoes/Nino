@@ -7,6 +7,7 @@
     "node": ">=20"
   },
   "scripts": {
+    "test:attachments": "node scripts/test-attachments.mjs",
     "test:bancada": "node scripts/test-bancada.mjs",
     "dev": "vite",
     "build": "tsc -b && vite build",

@@ -23,5 +23,5 @@ Transformar a conversa do Nino em uma ferramenta de trabalho para eletrônica, m
 ## Próximos incrementos
 
 - Casos de teste técnicos automatizados para respostas, segurança e continuidade.
-- Validar a análise real de imagens de esquemas e da bancada: integração implementada com prévia e continuidade, mas upload de teste bloqueado pela política do navegador. Testes locais de formato e limites aprovados.
-- Leitura assistida de arquivos de código e documentação de componentes.
+- Ampliar os casos de análise de esquemas: o usuário confirmou a análise de uma imagem; testes locais de formato e limites aprovados.
+- Leitura assistida de documentação de componentes. Anexos de código/texto implementados no botão único; seleção automatizada no navegador bloqueada pela política de upload, aguardando confirmação manual do usuário.
