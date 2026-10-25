@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { NinoRealtimeVoice } from './realtimeVoice'
 import { askNino, type NinoChatMessage } from './ninoChat'
+import { prepareLabImage } from './labImage'
 
 type NinoMood = 'presente' | 'curioso' | 'animado' | 'pensando' | 'cochilando' | 'concentrado' | 'confuso' | 'acolhedor' | 'orgulhoso'
 type Gaze = 'esquerda' | 'centro' | 'direita'
@@ -711,6 +712,8 @@ function App() {
   const [chatInput, setChatInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
   const [chatError, setChatError] = useState<string | null>(null)
+  const [chatImage, setChatImage] = useState<string | undefined>()
+  const [imagePreparing, setImagePreparing] = useState(false)
   const [labContext, setLabContext] = useState<LabContext>(storedLabContext)
   const [labContextOpen, setLabContextOpen] = useState(false)
   const [conversationCaption, setConversationCaption] = useState<string | null>(null)
@@ -794,11 +797,11 @@ function App() {
   }
 
   const sendChatMessage = async () => {
-    const message = chatInput.trim()
-    if (!message || chatLoading) return
+    const message = chatInput.trim() || (chatImage ? 'Analise esta imagem da bancada: o que é visível e qual o próximo teste útil?' : '')
+    if (!message || chatLoading || imagePreparing) return
 
     const history = chatMessages.slice(-8)
-    const userMessage: NinoChatMessage = { role: 'user', content: message }
+    const userMessage: NinoChatMessage = { role: 'user', content: message, image: chatImage }
     setChatMessages((current) => [...current, userMessage].slice(-10))
     setChatInput('')
     setChatError(null)
@@ -812,7 +815,7 @@ function App() {
     chatAbort.current = controller
 
     try {
-      const answer = await askNino(message, history, labContext, controller.signal)
+      const answer = await askNino(message, history, labContext, controller.signal, chatImage)
       const assistantMessage: NinoChatMessage = { role: 'assistant', content: answer.reply }
       setChatMessages((current) => [...current, assistantMessage].slice(-10))
       setMood(answer.mood)
@@ -1089,12 +1092,29 @@ function App() {
             {chatMessages.map((message, index) => (
               <p className={`chat-bubble chat-bubble--${message.role}`} key={`${message.role}-${index}`}>
                 <strong>{message.role === 'assistant' ? 'Nino' : 'Você'}</strong>
+                {message.image && <img className="chat-image-sent" src={message.image} alt="Imagem enviada da bancada" />}
                 <span>{message.content}</span>
               </p>
             ))}
             {chatLoading && <p className="chat-thinking"><span /><span /><span /> Pensando…</p>}
           </div>
           {chatError && <p className="chat-error" role="alert">{chatError}</p>}
+          <div className="chat-image-tools">
+            <label className="chat-image-picker">
+              {imagePreparing ? 'Preparando…' : chatImage ? 'Trocar imagem' : '+ Imagem'}
+              <input type="file" accept="image/png,image/jpeg,image/webp" aria-label="Anexar imagem da bancada" disabled={chatLoading || imagePreparing} onChange={async (event) => {
+                const file = event.currentTarget.files?.[0]
+                event.currentTarget.value = ''
+                if (!file) return
+                setImagePreparing(true)
+                setChatError(null)
+                try { setChatImage(await prepareLabImage(file)) }
+                catch (error) { setChatError(error instanceof Error ? error.message : 'Não consegui preparar a imagem.') }
+                finally { setImagePreparing(false) }
+              }} />
+            </label>
+            {chatImage ? <><img src={chatImage} alt="Prévia da imagem selecionada" /><span>Usada nas próximas perguntas.<br />Enviada ao tocar na seta.</span><button type="button" aria-label="Remover imagem" disabled={chatLoading} onClick={() => setChatImage(undefined)}>×</button></> : <small>Esquema ou foto · até 10 MB</small>}
+          </div>
           <form className="chat-composer" onSubmit={(event) => { event.preventDefault(); void sendChatMessage() }}>
             <textarea
               ref={chatInputRef}
@@ -1112,9 +1132,9 @@ function App() {
               placeholder="Descreva o circuito, firmware ou teste…"
               aria-label="Mensagem para o Nino"
             />
-            <button type="submit" disabled={chatLoading || !chatInput.trim()} aria-label="Enviar mensagem">↑</button>
+            <button type="submit" disabled={chatLoading || imagePreparing || (!chatInput.trim() && !chatImage)} aria-label="Enviar mensagem">↑</button>
           </form>
-          <small className="chat-privacy">{labContextCount ? 'Contexto temporário nesta aba' : 'Sem memória persistente'} · mensagens processadas pela OpenAI</small>
+          <small className="chat-privacy">{labContextCount ? 'Contexto temporário nesta aba' : 'Sem memória persistente'} · texto e imagens enviados são processados pela OpenAI</small>
         </section>
       )}
 

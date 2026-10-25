@@ -1,10 +1,11 @@
 import {
   NINO_CHAT_MAX_MESSAGE_CHARS,
+  NINO_CHAT_MAX_BODY_BYTES,
   createNinoReply,
   sanitizeConversation,
 } from '../server/nino-chat-core.js'
 
-const MAX_BODY_BYTES = 20_000
+const MAX_BODY_BYTES = NINO_CHAT_MAX_BODY_BYTES
 const RATE_LIMIT_WINDOW_MS = 60_000
 const RATE_LIMIT_REQUESTS = 12
 const attemptsByAddress = new Map()
@@ -105,7 +106,7 @@ export default async function ninoChat(request, response) {
 
   try {
     const payload = await readJson(request)
-    const conversation = sanitizeConversation(payload?.message, payload?.history, payload?.context)
+    const conversation = sanitizeConversation(payload?.message, payload?.history, payload?.context, payload?.image)
     if (!conversation.message || conversation.message.length > NINO_CHAT_MAX_MESSAGE_CHARS) {
       sendJson(response, 400, { error: 'Escreva uma mensagem de até 500 caracteres.' })
       return
@@ -114,6 +115,10 @@ export default async function ninoChat(request, response) {
     const reply = await createNinoReply({ apiKey, ...conversation })
     sendJson(response, 200, reply)
   } catch (error) {
+    if (error instanceof TypeError && error.message === 'IMAGE_INVALID') {
+      sendJson(response, 400, { error: 'Imagem inválida. Use PNG, JPEG ou WebP.' })
+      return
+    }
     if (error instanceof RangeError) {
       sendJson(response, 413, { error: 'Mensagem muito grande.' })
       return

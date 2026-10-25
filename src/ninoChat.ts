@@ -1,5 +1,5 @@
 export type NinoChatMood = 'presente' | 'curioso' | 'animado' | 'pensando' | 'cochilando' | 'concentrado' | 'confuso' | 'acolhedor' | 'orgulhoso'
-export type NinoChatMessage = { role: 'user' | 'assistant'; content: string }
+export type NinoChatMessage = { role: 'user' | 'assistant'; content: string; image?: string }
 export type NinoChatReply = { reply: string; mood: NinoChatMood }
 export type NinoLabContext = { objective: string; platform: string; power: string; instruments: string }
 
@@ -8,11 +8,11 @@ const moods = new Set<NinoChatMood>([
   'concentrado', 'confuso', 'acolhedor', 'orgulhoso',
 ])
 
-export async function askNino(message: string, history: NinoChatMessage[], context: NinoLabContext, signal?: AbortSignal): Promise<NinoChatReply> {
+export async function askNino(message: string, history: NinoChatMessage[], context: NinoLabContext, signal?: AbortSignal, image?: string): Promise<NinoChatReply> {
   const response = await fetch('/api/nino-chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, history: history.slice(-8), context }),
+    body: JSON.stringify({ message, history: history.slice(-8).map(({ role, content }) => ({ role, content })), context, image }),
     signal,
   })
   const data = await response.json().catch(() => ({})) as Partial<NinoChatReply> & { error?: string }

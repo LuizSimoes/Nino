@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { sanitizeConversation, sanitizeLabContext } from '../server/nino-chat-core.js'
+import { sanitizeConversation, sanitizeLabContext, sanitizeImage, createNinoReply } from '../server/nino-chat-core.js'
 
 // Os testes locais não usam chave nem fazem chamadas externas.
 assert.deepEqual(sanitizeLabContext(null), { objective: '', platform: '', power: '', instruments: '' })
@@ -16,6 +16,23 @@ assert.equal(conversation.message, 'teste')
 assert.equal(conversation.history.length, 8)
 assert.equal(conversation.history[0].content, 'etapa 2')
 console.log('Validação local: contexto e histórico aprovados.')
+
+const testImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aS1sAAAAASUVORK5CYII='
+assert.equal(sanitizeImage(testImage), testImage)
+assert.throws(() => sanitizeImage('https://example.com/image.png'), /IMAGE_INVALID/)
+assert.throws(() => sanitizeImage('data:image/png;base64,aGVsbG8='), /IMAGE_INVALID/)
+assert.throws(() => sanitizeImage('data:image/png;base64,' + Buffer.alloc(1_048_577).toString('base64')), /IMAGE_TOO_LARGE/)
+const realFetch = globalThis.fetch
+try {
+  globalThis.fetch = async (_url, options) => {
+    const request = JSON.parse(options.body)
+    assert.equal(request.store, false)
+    assert.deepEqual(request.input.at(-1).content, [{ type: 'input_text', text: 'Analise' }, { type: 'input_image', image_url: testImage, detail: 'high' }])
+    return new Response(JSON.stringify({ output_text: JSON.stringify({ reply: 'Imagem recebida.', mood: 'curioso' }) }))
+  }
+  await createNinoReply({ apiKey: 'test', message: 'Analise', history: [], image: testImage })
+} finally { globalThis.fetch = realFetch }
+console.log('Validação local: imagens inválidas/grandes rejeitadas e entrada multimodal aprovada.')
 
 // Opt-in explícito: exercita a rota real e pode consumir a API configurada.
 const endpoint = process.argv.find((arg) => arg.startsWith('--endpoint='))?.slice(11)

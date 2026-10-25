@@ -57,6 +57,10 @@ A rota publicada aceita somente `POST`, limita tamanho, origem e frequência bá
 
 ## Estado atual
 
+- A conversa aceita uma imagem PNG, JPEG ou WebP de até 10 MB, com prévia local antes do envio. O navegador redimensiona a imagem para até 1600 px e a converte para JPEG de até 1 MB; o servidor valida formato, assinatura e tamanho.
+- A imagem selecionada acompanha as próximas perguntas até ser removida ou substituída. As miniaturas permanecem apenas no histórico em memória da página; nenhum arquivo é criado no servidor do projeto. Ao recarregar, as imagens são descartadas. O envio à OpenAI ocorre somente ao enviar uma mensagem, inclusive quando há apenas uma imagem selecionada.
+- A integração de visão segue o formato `input_image` da Responses API. Testes locais cobrem validação e montagem da requisição; a análise real de imagem permanece pendente de validação, pois o upload do arquivo de teste foi bloqueado pela política do navegador durante a implementação.
+
 Para conferir contexto e histórico sem chamadas externas, execute `npm run test:bancada`. Para exercitar quatro cenários na API publicada, execute `npm run test:bancada -- --endpoint=https://nino-phi.vercel.app/api/nino-chat`; essa opção usa o serviço configurado e pode gerar consumo. Os cenários verificam contexto, continuidade de diagnóstico, acionamento de carga e firmware sem bloqueio. A avaliação por termos detecta regressões básicas e não certifica a correção de um circuito.
 
 - A interface usa como personagem principal a ilustração vetorial dourada escolhida durante os testes. O modelo [`Nino_v6_complete.glb`](outputs/3d/Nino_v6_complete.glb) permanece preservado como base 3D para evoluções futuras.

@@ -2,6 +2,10 @@
 
 ## Próxima atualização
 
+- Anexos de imagem com prévia, troca e remoção, preparação local e validação no servidor.
+- Imagem selecionada acompanha perguntas seguintes; Nino orientado a distinguir observações visuais de hipóteses e medições.
+- Layout em janelas baixas ajustado para preservar cabeçalho e área de escrita com o novo controle.
+
 - Validação reproduzível do contexto e histórico, com quatro cenários opcionais na API real para contexto, diagnóstico, acionamento e firmware.
 
 - Modo Bancada iniciado com quatro atalhos técnicos para tarefas recorrentes.

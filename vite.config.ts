@@ -1,7 +1,7 @@
 import { defineConfig, loadEnv, type Connect, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 // @ts-expect-error Módulo JavaScript compartilhado com a função serverless.
-import { createNinoReply, sanitizeConversation } from './server/nino-chat-core.js'
+import { createNinoReply, sanitizeConversation, NINO_CHAT_MAX_BODY_BYTES } from './server/nino-chat-core.js'
 
 const runtime = globalThis as unknown as {
   process?: { env?: Record<string, string | undefined> }
@@ -48,8 +48,8 @@ function realtimeVoicePlugin(apiKey: string): Plugin {
       }
 
       try {
-        const body = JSON.parse(await readRequestBody(voiceRequest, 20_000)) as { message?: unknown; history?: unknown; context?: unknown }
-        const conversation = sanitizeConversation(body.message, body.history, body.context)
+        const body = JSON.parse(await readRequestBody(voiceRequest, NINO_CHAT_MAX_BODY_BYTES)) as { message?: unknown; history?: unknown; context?: unknown; image?: unknown }
+        const conversation = sanitizeConversation(body.message, body.history, body.context, body.image)
         if (!conversation.message || conversation.message.length > 500) {
           response.statusCode = 400
           response.end(JSON.stringify({ error: 'Escreva uma mensagem de até 500 caracteres.' }))
@@ -58,7 +58,17 @@ function realtimeVoicePlugin(apiKey: string): Plugin {
         const reply = await createNinoReply({ apiKey, ...conversation, safetyIdentifier: 'nino-local-prototype' })
         response.statusCode = 200
         response.end(JSON.stringify(reply))
-      } catch {
+      } catch (error) {
+        if (error instanceof TypeError && error.message === 'IMAGE_INVALID') {
+          response.statusCode = 400
+          response.end(JSON.stringify({ error: 'Imagem inválida. Use PNG, JPEG ou WebP.' }))
+          return
+        }
+        if (error instanceof RangeError) {
+          response.statusCode = 413
+          response.end(JSON.stringify({ error: 'Imagem muito grande. Use uma imagem de até 1 MB após preparação.' }))
+          return
+        }
         response.statusCode = 502
         response.end(JSON.stringify({ error: 'O Nino não conseguiu pensar agora. Tente novamente.' }))
       }

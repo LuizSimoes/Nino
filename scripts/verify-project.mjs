@@ -76,9 +76,9 @@ for (const requirement of [
 
 for (const [source, requirement] of [
   [app, "sessionStorage.setItem('nino-lab-context-v1'"],
-  [chatClient, 'JSON.stringify({ message, history: history.slice(-8), context })'],
-  [chatApi, 'sanitizeConversation(payload?.message, payload?.history, payload?.context)'],
-  [viteConfig, 'sanitizeConversation(body.message, body.history, body.context)'],
+  [chatClient, 'context, image })'],
+  [chatApi, 'sanitizeConversation(payload?.message, payload?.history, payload?.context, payload?.image)'],
+  [viteConfig, 'sanitizeConversation(body.message, body.history, body.context, body.image)'],
 ]) {
   if (!source.includes(requirement)) fail(`encadeamento do contexto ausente: ${requirement}`)
 }
