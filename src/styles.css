@@ -1597,12 +1597,16 @@ footer { display: none; }
 .voice-lab {
   position: absolute;
   z-index: 40;
-  inset: 58px 8px 8px;
+  right: 8px;
+  bottom: 8px;
+  left: 8px;
+  max-height: calc(100% - 78px);
   display: flex;
   flex-direction: column;
   gap: 9px;
   padding: 14px;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   border: 1px solid rgba(126,228,216,.28);
   border-radius: 18px;
   color: #f6f4ff;
@@ -1645,6 +1649,75 @@ footer { display: none; }
 .voice-lab-note { margin-top: auto; color: #85839a; text-align: center; font: 500 7px/1.25 system-ui, sans-serif; }
 .voice-lab-note--neural { color: #86eadf; }
 .voice-lab-note--conectando { color: #f6d66b; }
+
+/* Contenção horizontal do dock em painéis estreitos do navegador integrado. */
+.app-shell,
+.topbar,
+.hero,
+.nino-stage,
+.control-panel { min-width: 0; }
+
+.topbar {
+  gap: 6px;
+  overflow: hidden;
+}
+
+.brand { flex: none; }
+.privacy-status {
+  min-width: 0;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  gap: 3px;
+}
+.privacy-status > span,
+.privacy-status > .voice-toggle {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  justify-content: center;
+  padding: 0;
+  overflow: hidden;
+}
+.privacy-status > span { display: none; }
+.privacy-status > .voice-lab-trigger {
+  width: auto;
+  flex: 0 1 auto;
+  padding: 0 8px;
+  font-size: 8px;
+  white-space: nowrap;
+}
+
+.nino-caption {
+  max-width: 100%;
+  min-width: 0;
+  line-height: 1.25;
+}
+.caption-indicator { flex: none; }
+.caption-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.expression-controls,
+.expression-more { max-width: 100%; }
+.expression-button {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.control-panel { overflow: hidden; }
+.panel-heading,
+.panel-heading > div,
+.demo-actions { min-width: 0; }
+.panel-heading h2 { overflow-wrap: anywhere; }
+.toggle { flex: none; }
+.demo-actions,
+.primary-button {
+  width: 100%;
+  max-width: none;
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }

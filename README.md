@@ -1,4 +1,4 @@
-# Nino v1 — Primeiro Contato
+# Nino v0.1 — Primeiro Contato
 
 Protótipo local do Nino: um personagem canino 3D inspirado na memória afetiva de um mestiço de Golden Retriever. A experiência apresenta nove estados emocionais, olhar responsivo, microcomportamentos de repouso, pingente expressivo e uma demonstração controlável de Intuição local.
 
@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-Abra o endereço exibido no Terminal (normalmente `http://localhost:5173`).
+Abra o endereço exibido no Terminal (normalmente `http://localhost:5173`). A interface funciona como um dock compacto e ocupa, no máximo, cerca de um quarto da largura de uma tela desktop.
 
 Para validar a versão de produção:
 
@@ -28,7 +28,9 @@ O projeto funciona sem configuração, usando a voz local do macOS. Para experim
 2. Preencha `OPENAI_API_KEY` somente no arquivo local.
 3. Reinicie `npm run dev`.
 
-A chave permanece no servidor local e nunca é enviada ao código do navegador. `.env.local` está ignorado pelo Git.
+A chave permanece no servidor local e nunca é incluída no código enviado ao navegador. `.env.local` está ignorado pelo Git.
+
+> A rota de voz incluída em `vite.config.ts` atende ao desenvolvimento local. Uma publicação na internet deve mover essa rota para um backend seguro e configurar a chave somente no ambiente do servidor.
 
 ## O que experimentar
 
@@ -38,21 +40,32 @@ A chave permanece no servidor local e nunca é enviada ao código do navegador. 
 - Passe o ponteiro perto do Nino e observe o acompanhamento sutil do olhar.
 - Use **Demonstrar intuição** para exibir uma sugestão lateral que não bloqueia a interface.
 - Pause e reative a Intuição no controle **Ativa/Pausada**.
-- Confirme no topo que microfone e câmera permanecem desligados.
+- Teste a voz **Nino cartoon**, escolhida como padrão do personagem.
+- Confirme que nenhuma permissão de microfone ou câmera é solicitada.
 
 ## Estado atual
 
 - A interface carrega o modelo real [`Nino_v6_complete.glb`](outputs/3d/Nino_v6_complete.glb) com Three.js e mantém a ilustração vetorial como alternativa automática de carregamento.
 - Os nove botões controlam as poses corporais, as expressões faciais, o piscar com pálpebras douradas, os olhos fechados do cochilo e os símbolos do pingente no modelo 3D.
-- A boca usa uma sequência discreta de visemas sincronizada ao início, aos limites das palavras e ao fim da fala sintetizada.
+- A boca combina os visemas `MBP`, `A`, `E`, `O`, `U` e `L` com a amplitude real do áudio neural. Ela fecha durante pausas, retoma na frase seguinte e preserva a expressão emocional após a fala.
 - O olhar acompanha discretamente o ponteiro por rotação tridimensional do personagem.
 - O blockout estabelece proporções, materiais, peças faciais, esqueleto, testes de fala e nove ações emocionais. Escultura, retopologia e pesos finais continuam como etapas posteriores de acabamento.
 - A voz tenta usar o modelo neural `gpt-realtime-2.1-mini` por WebRTC quando uma chave local está configurada; sem ela, usa automaticamente o sintetizador do navegador em português.
-- O comparador de voz permite ouvir a mesma frase nas interpretações **Garoto brincalhão**, **Pequeno inventor** e **Jovem aventureiro**; a escolhida passa a orientar todas as expressões.
+- O comparador permite ouvir **Nino divertido**, **Nino cartoon**, **Pequeno inventor** e **Jovem aventureiro**. **Nino cartoon** é o perfil padrão: masculino, infantojuvenil, rápido, sorridente e expressivo.
 - A interface informa quando a voz é gerada por IA. O áudio é somente de saída: nenhum microfone é ligado ou solicitado.
 - Não há conta, memória persistente ou acesso a sensores. A integração externa de voz só é ativada pela configuração local explícita.
 - A “Intuição” considera apenas tempo e ações dentro da página e não persiste dados.
 - Nenhuma permissão de microfone ou câmera é solicitada.
+
+## Verificação antes de publicar
+
+```bash
+npm ci
+npm run build
+git status --ignored --short
+```
+
+Confirme que `.env.local` aparece apenas como ignorado (`!!`) e nunca como arquivo versionado. Se uma chave for publicada acidentalmente, revogue-a imediatamente no painel da OpenAI e crie outra.
 
 Consulte [`docs/ESCOPO_ETAPA_1.md`](docs/ESCOPO_ETAPA_1.md) para os critérios de aceite e [`docs/DECISOES_E_LACUNAS.md`](docs/DECISOES_E_LACUNAS.md) para decisões reversíveis e artefatos ausentes.
 

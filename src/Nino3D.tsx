@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type MutableRefObject, type ReactNode } from 'react'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
@@ -10,6 +10,7 @@ type Nino3DProps = {
   look: LookOffset | null
   speaking: boolean
   speechBeat: number
+  speechLevel: MutableRefObject<number>
   fallback: ReactNode
 }
 
@@ -34,6 +35,9 @@ type MorphMesh = THREE.Mesh & {
 type Speech = {
   startsAt: number
   endsAt: number
+  beatAt: number
+  energy: number
+  level: number
 }
 
 const modelMood: Record<NinoMood, string> = {
@@ -77,29 +81,68 @@ function holdAction(mixer: THREE.AnimationMixer, clip: THREE.AnimationClip) {
   action.paused = true
 }
 
-function animateSpeech(mouth: MorphMesh | null, speech: Speech | null, now: number) {
+function animateSpeech(mouth: MorphMesh | null, speech: Speech | null, audioLevel: number, now: number) {
   if (!mouth?.morphTargetDictionary || !mouth.morphTargetInfluences || !speech) return
   if (now < speech.startsAt || now >= speech.endsAt) return
 
   const dictionary = mouth.morphTargetDictionary
   const influences = mouth.morphTargetInfluences
-  const sequence = ['MBP', 'A', 'E', 'L', 'O', 'MBP', 'U', 'A', 'E', 'O', 'L']
+  const sequence = [
+    { viseme: 'MBP', duration: 72, weight: 0.42, jaw: 0.006 },
+    { viseme: 'A', duration: 128, weight: 0.35, jaw: 0.092 },
+    { viseme: 'E', duration: 104, weight: 0.31, jaw: 0.062 },
+    { viseme: 'L', duration: 86, weight: 0.28, jaw: 0.038 },
+    { viseme: 'O', duration: 136, weight: 0.36, jaw: 0.082 },
+    { viseme: 'MBP', duration: 64, weight: 0.46, jaw: 0.004 },
+    { viseme: 'U', duration: 108, weight: 0.34, jaw: 0.052 },
+    { viseme: 'A', duration: 116, weight: 0.34, jaw: 0.086 },
+    { viseme: 'E', duration: 96, weight: 0.3, jaw: 0.058 },
+    { viseme: 'O', duration: 124, weight: 0.35, jaw: 0.078 },
+    { viseme: 'L', duration: 82, weight: 0.27, jaw: 0.034 },
+  ]
   const elapsed = Math.max(0, now - speech.startsAt)
-  const syllableDuration = 112
-  const scaled = elapsed / syllableDuration
-  const phase = Math.floor(scaled) % sequence.length
-  const pulse = Math.sin(Math.PI * (scaled - Math.floor(scaled)))
-  const viseme = sequence[phase]
+  const cycleDuration = sequence.reduce((total, frame) => total + frame.duration, 0)
+  let cursor = elapsed % cycleDuration
+  let frame = sequence[0]
+  for (const candidate of sequence) {
+    if (cursor < candidate.duration) {
+      frame = candidate
+      break
+    }
+    cursor -= candidate.duration
+  }
+
+  const progress = cursor / frame.duration
+  const pulse = Math.pow(Math.sin(Math.PI * progress), 0.72)
+  const fallbackLevel = 0.72 + Math.sin(elapsed * 0.017) * 0.18
+  const targetLevel = audioLevel < 0 ? fallbackLevel : audioLevel
+  const smoothing = targetLevel > speech.level ? 0.38 : 0.2
+  speech.level += (targetLevel - speech.level) * smoothing
+  const intensity = Math.min(1.12, Math.max(0, speech.level * 1.42))
+  const viseme = frame.viseme
   const visemeIndex = dictionary[viseme]
   const jawIndex = dictionary.jaw_open
   const closedIndex = dictionary.closed
+  const smileIndex = dictionary.smile
+  const wideSmileIndex = dictionary.smile_wide
+  const frownIndex = dictionary.frown
+  const articulation = pulse * intensity
 
-  if (visemeIndex !== undefined) influences[visemeIndex] = Math.max(influences[visemeIndex], pulse * 0.24)
-  if (jawIndex !== undefined) {
-    const opening = viseme === 'MBP' ? 0.012 : 0.065
-    influences[jawIndex] = Math.max(influences[jawIndex], pulse * opening)
+  // Durante a fala, use uma base labial única. Isso impede que a boca estática
+  // de cada emoção (aberta no Eureca, em O no Confuso etc.) se some aos visemas.
+  for (const shape of ['jaw_open', 'MBP', 'A', 'E', 'O', 'U', 'L']) {
+    const index = dictionary[shape]
+    if (index !== undefined) influences[index] = 0
   }
-  if (closedIndex !== undefined) influences[closedIndex] *= 1 - pulse * 0.28
+  if (wideSmileIndex !== undefined) influences[wideSmileIndex] = 0
+  if (frownIndex !== undefined) influences[frownIndex] = 0
+  if (smileIndex !== undefined) influences[smileIndex] = 0.14
+  if (closedIndex !== undefined) influences[closedIndex] = viseme === 'MBP' ? 1 : Math.max(0.04, 1 - articulation * 0.94)
+
+  if (visemeIndex !== undefined) influences[visemeIndex] = articulation * frame.weight
+  if (jawIndex !== undefined) influences[jawIndex] = articulation * frame.jaw
+  if (smileIndex !== undefined) influences[smileIndex] += articulation * 0.045
+  if (wideSmileIndex !== undefined) influences[wideSmileIndex] = articulation * 0.025
 }
 
 function animateEye(
@@ -150,7 +193,7 @@ function createEyelid(name: string, x: number) {
   return eyelid
 }
 
-export function Nino3D({ mood, look, speaking, speechBeat, fallback }: Nino3DProps) {
+export function Nino3D({ mood, look, speaking, speechBeat, speechLevel, fallback }: Nino3DProps) {
   const hostRef = useRef<HTMLDivElement>(null)
   const lookRef = useRef<LookOffset | null>(look)
   const runtimeRef = useRef<Runtime | null>(null)
@@ -274,7 +317,7 @@ export function Nino3D({ mood, look, speaking, speechBeat, fallback }: Nino3DPro
             influences[index] = baseMorphRef.current[index]
           }
         }
-        animateSpeech(activeRuntime.mouth, speechRef.current, now)
+        animateSpeech(activeRuntime.mouth, speechRef.current, speechLevel.current, now)
         animateEye(activeRuntime.eyeLeft, activeRuntime.eyelidLeft, 'L', activeRuntime.eyeSquint.left, activeRuntime.sleeping, now)
         animateEye(activeRuntime.eyeRight, activeRuntime.eyelidRight, 'R', activeRuntime.eyeSquint.right, activeRuntime.sleeping, now)
         if (speechRef.current && now >= speechRef.current.endsAt) speechRef.current = null
@@ -331,12 +374,21 @@ export function Nino3D({ mood, look, speaking, speechBeat, fallback }: Nino3DPro
   }, [mood, runtime])
 
   useEffect(() => {
-    if (!runtime || !speaking || mood === 'cochilando') {
+    if (!runtime || !speaking) {
       speechRef.current = null
       return
     }
-    speechRef.current = { startsAt: performance.now(), endsAt: Number.POSITIVE_INFINITY }
-  }, [mood, runtime, speaking, speechBeat])
+    if (!speechRef.current) {
+      const now = performance.now()
+      speechRef.current = { startsAt: now, endsAt: Number.POSITIVE_INFINITY, beatAt: now, energy: 0.94, level: 0 }
+    }
+  }, [mood, runtime, speaking])
+
+  useEffect(() => {
+    if (!runtime || !speaking || !speechRef.current) return
+    speechRef.current.beatAt = performance.now()
+    speechRef.current.energy = 0.92 + (speechBeat % 4) * 0.025
+  }, [runtime, speaking, speechBeat])
 
   return (
     <div className={`nino-3d ${ready ? 'nino-3d--ready' : ''} ${failed ? 'nino-3d--failed' : ''} ${speaking ? 'nino-3d--speaking' : ''}`}>

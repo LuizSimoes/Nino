@@ -72,13 +72,17 @@ const suggestions = [
   },
 ]
 
-type VoiceProfile = 'adolescente' | 'inventor' | 'aventureiro'
+type VoiceProfile = 'adolescente' | 'cartoon' | 'inventor' | 'aventureiro'
 type VoiceEngine = 'conectando' | 'neural' | 'local'
 
 const voiceProfiles: Record<VoiceProfile, { label: string; detail: string; rate: number; pitch: number; preferredVoice: string; neuralStyle: string }> = {
   adolescente: {
-    label: 'Garoto brincalhão', detail: 'Mais infantil, ágil e sorridente.', rate: 1.18, pitch: 1.32, preferredVoice: 'Eddy',
-    neuralStyle: 'Use uma voz masculina infantojuvenil, divertida, sorridente e natural. Fale com ritmo ágil e leve, sem soar adulto ou caricato.',
+    label: 'Nino divertido', detail: 'Infantil, ágil, sorridente e cheio de vida.', rate: 1.22, pitch: 1.38, preferredVoice: 'Eddy',
+    neuralStyle: 'Interprete como um garoto infantojuvenil muito simpático e divertido: timbre masculino jovem, leve e um pouco agudo, sorriso perceptível na voz, ritmo ágil e pequenas variações de entonação. Transmita curiosidade e alegria espontânea. Não fale devagar, não use voz adulta grave, não soe como uma mulher adulta e não exagere como um bebê ou desenho caricato.',
+  },
+  cartoon: {
+    label: 'Nino cartoon', detail: 'Elástico, expressivo e com energia de desenho animado.', rate: 1.27, pitch: 1.5, preferredVoice: 'Eddy',
+    neuralStyle: 'Interprete como a voz original de um personagem de desenho animado brasileiro: masculina, infantojuvenil, simpática e muito expressiva. Use timbre leve e mais agudo, sorriso claro na voz, ritmo rápido sem atropelar as palavras, ataques vivos e entonação elástica. Dê pequenas ênfases de surpresa e curiosidade, como um mascote aventureiro. Mantenha a fala natural e inteligível; não imite personagem conhecido, não soe como uma mulher adulta, não use voz grave e não infantilize como um bebê.',
   },
   inventor: {
     label: 'Pequeno inventor', detail: 'Curioso, esperto e cheio de energia.', rate: 1.15, pitch: 1.38, preferredVoice: 'Reed',
@@ -611,14 +615,15 @@ function App() {
   const [lookOffset, setLookOffset] = useState<LookOffset | null>(null)
   const [moreOpen, setMoreOpen] = useState(false)
   const [voiceOn, setVoiceOn] = useState(true)
-  const [voiceProfile, setVoiceProfile] = useState<VoiceProfile>('adolescente')
-  const [voiceLabOpen, setVoiceLabOpen] = useState(true)
+  const [voiceProfile, setVoiceProfile] = useState<VoiceProfile>('cartoon')
+  const [voiceLabOpen, setVoiceLabOpen] = useState(false)
   const [voiceEngine, setVoiceEngine] = useState<VoiceEngine>('local')
   const [speaking, setSpeaking] = useState(false)
   const [speechBeat, setSpeechBeat] = useState(0)
   const activityTimer = useRef<number | null>(null)
   const suggestionTimer = useRef<number | null>(null)
   const speechToken = useRef(0)
+  const speechLevel = useRef(-1)
   const neuralVoice = useRef<NinoRealtimeVoice | null>(null)
 
   const playSpeech = useCallback((text: string, profile: VoiceProfile, nextMood: NinoMood = 'presente') => {
@@ -637,12 +642,16 @@ function App() {
       if (speechToken.current === token) setSpeechBeat((value) => value + 1)
     }
     const finish = () => {
-      if (speechToken.current === token) setSpeaking(false)
+      if (speechToken.current === token) {
+        speechLevel.current = 0
+        setSpeaking(false)
+      }
     }
 
     const playLocalFallback = () => {
       if (!('speechSynthesis' in window) || speechToken.current !== token) return
       setVoiceEngine('local')
+      speechLevel.current = -1
       const utterance = new SpeechSynthesisUtterance(text)
       utterance.lang = 'pt-BR'
       const moodRate = nextMood === 'cochilando' ? 0.88 : nextMood === 'animado' ? 1.06 : 1
@@ -668,6 +677,7 @@ function App() {
     void neuralVoice.current.speak(text, profileSettings.neuralStyle, {
       onStart: start,
       onBeat: beat,
+      onLevel: (level) => { speechLevel.current = level },
       onEnd: finish,
     }).then(() => {
       if (speechToken.current === token) setVoiceEngine('neural')
@@ -748,6 +758,12 @@ function App() {
       if (suggestionTimer.current) window.clearTimeout(suggestionTimer.current)
     }
   }, [intuitionOn])
+
+  useEffect(() => {
+    if (!feedback) return
+    const feedbackTimer = window.setTimeout(() => setFeedback(null), 4200)
+    return () => window.clearTimeout(feedbackTimer)
+  }, [feedback])
 
   useEffect(() => () => {
     if (activityTimer.current) window.clearTimeout(activityTimer.current)
@@ -831,7 +847,7 @@ function App() {
             </div>
             <button type="button" aria-label="Fechar comparador de vozes" onClick={() => setVoiceLabOpen(false)}>×</button>
           </div>
-          <p className="voice-lab-intro">Três interpretações masculinas mais rápidas e infantis. A escolhida será aplicada às expressões.</p>
+          <p className="voice-lab-intro">Quatro interpretações masculinas, rápidas e infantis. A escolhida será aplicada às expressões.</p>
           <blockquote>“{voiceSample}”</blockquote>
           <div className="voice-options" role="group" aria-label="Opções de voz">
             {(Object.entries(voiceProfiles) as Array<[VoiceProfile, typeof voiceProfiles[VoiceProfile]]>).map(([key, profile]) => (
@@ -891,11 +907,12 @@ function App() {
             look={lookOffset}
             speaking={speaking}
             speechBeat={speechBeat}
+            speechLevel={speechLevel}
             fallback={<NinoFace key={mood} mood={mood} gaze={gaze} blinking={blinking} look={lookOffset} />}
           />
           <div className={moreOpen ? 'nino-caption nino-caption--raised' : 'nino-caption'}>
             <span className="caption-indicator" />
-            {moodCaptions[mood]}
+            <span className="caption-text">{moodCaptions[mood]}</span>
           </div>
           {moreOpen && (
             <div className="expression-more" id="mais-expressoes" role="group" aria-label="Mais expressões do Nino">
