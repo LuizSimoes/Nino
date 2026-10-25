@@ -25,4 +25,15 @@ Reproduzir a partir da raiz do projeto:
 
 Os PNGs neutro/piscar/mandíbula são verificações técnicas, não propostas de substituição do conceito aprovado. O script de verificação reabre o arquivo e confere controles, cobertura das pálpebras e direção da abertura da mandíbula. Não certifica acabamento artístico, sincronização com áudio ou desempenho no navegador.
 
-Próximo marco: refinar formas e painéis faciais para aproximar da referência antes de integrar a troca Cão/Androide. A versão atual do cão permanece intacta.
+## Segundo estudo geométrico
+
+`refinement-v2/Android_v2_refinement.blend` preserva o primeiro modelo e substitui seus blocos faciais por painéis moldados, contorno da mandíbula, monitor integrado, circuitos e quatro obturadores curvos (duas peças por olho). O quadro 30 exibe o sinal de desligado na testa e fecha as lentes. O quadro 60 exercita a mandíbula; o 90 retorna ao repouso. PNGs neutro/cochilo/mandíbula acompanham o arquivo.
+
+Ainda é uma aproximação geométrica simplificada: não possui o acabamento realista do conceito, nem as nove expressões completas, rastreamento de olhar, fala sincronizada, exportação final ou seletor no site. Formas e silhueta precisam de nova avaliação antes de declarar a aparência pronta.
+
+```sh
+/Applications/Blender.app/Contents/MacOS/Blender --background --python-exit-code 1 --python blender/build_android_v2.py
+/Applications/Blender.app/Contents/MacOS/Blender --background --python-exit-code 1 --python blender/verify_android_v2.py
+```
+
+Próximo marco: avaliar o segundo estudo e continuar refinando a fidelidade ao conceito antes de integrar a troca Cão/Androide. A versão atual do cão permanece intacta.

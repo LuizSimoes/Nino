@@ -2,6 +2,8 @@
 
 ## Próxima atualização
 
+- Segundo estudo 3D do androide: painéis faciais moldados, circuitos detalhados, monitor com sinal de repouso/desligado e obturadores curvos com controles de fechamento. Arquivo anterior e personagem publicado preservados; acabamento e integração continuam pendentes.
+
 - Conceito alternativo do androide e nove expressões aprovadas preservados no projeto, sem substituir o cão na interface.
 - Primeiro blockout técnico editável em Blender, com controles independentes de cabeça, pálpebras e mandíbula, renders de teste e verificação reproduzível. Acabamento realista e integração do seletor ainda pendentes.
 
