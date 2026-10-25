@@ -16,7 +16,7 @@ Abra o endereço exibido no Terminal (normalmente `http://localhost:5173`). A in
 Para validar a versão de produção:
 
 ```bash
-npm run build
+npm run verify
 npm run preview
 ```
 
@@ -70,7 +70,8 @@ A rota publicada aceita somente `POST`, limita tamanho, origem e frequência bá
 
 ```bash
 npm ci
-npm run build
+npm run verify
+npm audit --omit=dev
 git status --ignored --short
 ```
 
