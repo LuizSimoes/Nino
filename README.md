@@ -62,7 +62,7 @@ A rota publicada aceita somente `POST`, limita tamanho, origem e frequência bá
 - O blockout estabelece proporções, materiais, peças faciais, esqueleto, testes de fala e nove ações emocionais. Escultura, retopologia e pesos finais continuam como etapas posteriores de acabamento.
 - A voz tenta usar o modelo neural `gpt-realtime-2.1-mini` por WebRTC quando uma chave local está configurada; sem ela, usa automaticamente o sintetizador do navegador em português.
 - A conversa usa a Responses API com `gpt-6-luna`: o Nino atua como copiloto técnico adulto de eletrônica, microcontroladores, programação e prototipagem, enquanto a camada de voz apenas lê a resposta aprovada.
-- No desktop, a conversa se abre ao lado do dock e preserva o personagem; em telas estreitas, torna-se uma tela dedicada dentro do dock.
+- No desktop, o dock cresce verticalmente e reserva uma área abaixo do personagem para a conversa; em telas estreitas, a conversa torna-se uma tela dedicada dentro do dock.
 - O histórico fica somente na sessão atual do navegador e as requisições usam `store: false`; não há memória persistente do Nino.
 - O comparador permite ouvir **Nino divertido**, **Nino cartoon**, **Pequeno inventor** e **Jovem aventureiro**. **Nino cartoon** é o perfil padrão: masculino, infantojuvenil, rápido, sorridente e expressivo.
 - A interface informa quando a voz é gerada por IA. O áudio é somente de saída: nenhum microfone é ligado ou solicitado.

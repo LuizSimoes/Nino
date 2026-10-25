@@ -2,6 +2,8 @@
 
 ## Próxima atualização
 
+- Dock passa a crescer verticalmente quando a conversa é aberta, aproveitando o espaço acima e abaixo sem cobrir o Nino.
+- Página principal deixa de ser armazenada em cache para evitar que o navegador preserve uma interface anterior após novas publicações.
 - Conversa reposicionada ao lado do dock em telas largas e transformada em tela dedicada no modo estreito, sem cobrir o Nino.
 - Sugestões de Intuição incorporadas ao painel inferior, sem esconder as expressões.
 - Personalidade revisada para um copiloto de laboratório adulto, técnico, proativo e espirituoso.
