@@ -2,6 +2,9 @@
 
 ## Próxima atualização
 
+- Breakpoint estreito corrigido: reduzir a largura da janela não esconde mais o Nino atrás da conversa.
+- Durante a conversa, o painel de demonstração dá lugar ao diálogo; personagem e expressões permanecem visíveis.
+- Tipografia da conversa ampliada para melhorar a leitura em janelas estreitas e telas de alta resolução.
 - Dock passa a crescer verticalmente quando a conversa é aberta, aproveitando o espaço acima e abaixo sem cobrir o Nino.
 - Página principal deixa de ser armazenada em cache para evitar que o navegador preserve uma interface anterior após novas publicações.
 - Conversa reposicionada ao lado do dock em telas largas e transformada em tela dedicada no modo estreito, sem cobrir o Nino.

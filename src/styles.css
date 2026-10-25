@@ -1866,42 +1866,46 @@ footer { display: none; }
 
 @keyframes chatDot { to { opacity: .3; transform: translateY(-2px); } }
 
-/* Em telas largas, o dock cresce para cima e para baixo e reserva uma área própria à conversa. */
-@media (min-width: 861px) {
-  .app-shell--chat-open {
-    top: 18px;
-    bottom: 18px;
-    height: auto;
-    max-height: none;
-    transform: none;
-    grid-template-rows: 50px auto minmax(260px, 1fr);
-    row-gap: 8px;
-    overflow: hidden;
-  }
-
-  .app-shell--chat-open > .topbar { grid-row: 1; }
-  .app-shell--chat-open > .hero { grid-row: 2; }
-
-  .app-shell--chat-open .chat-lab {
-    position: relative;
-    grid-row: 3;
-    top: auto;
-    right: auto;
-    bottom: auto;
-    left: auto;
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    max-height: none;
-    animation: verticalPanelIn .28s cubic-bezier(.2,.78,.28,1) both;
-  }
-
-  .app-shell--chat-open .chat-lab-heading p { font-size: 8px; }
-  .app-shell--chat-open .chat-lab-heading h2 { font-size: 15px; }
-  .app-shell--chat-open .chat-bubble { max-width: 94%; font-size: 9px; }
-  .app-shell--chat-open .chat-bubble strong { font-size: 8px; }
-  .app-shell--chat-open .chat-composer textarea { font-size: 9px; }
+/* Em qualquer largura, o dock cresce verticalmente e mantém Nino acima da conversa. */
+.app-shell--chat-open {
+  top: 18px;
+  bottom: 18px;
+  height: auto;
+  max-height: none;
+  transform: none;
+  grid-template-rows: 50px auto minmax(0, 1fr);
+  row-gap: 8px;
+  overflow: hidden;
 }
+
+.app-shell--chat-open > .topbar { grid-row: 1; }
+.app-shell--chat-open > .hero { grid-row: 2; min-height: 0; overflow: hidden; }
+.app-shell--chat-open .control-panel { display: none; }
+
+.app-shell--chat-open .chat-lab {
+  position: relative;
+  grid-row: 3;
+  top: auto;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  animation: verticalPanelIn .28s cubic-bezier(.2,.78,.28,1) both;
+}
+
+.app-shell--chat-open .chat-lab-heading p { font-size: 9px; }
+.app-shell--chat-open .chat-lab-heading h2 { font-size: 17px; }
+.app-shell--chat-open .chat-bubble { max-width: 94%; padding: 10px 11px; font-size: 12px; line-height: 1.45; }
+.app-shell--chat-open .chat-bubble strong { font-size: 10px; }
+.app-shell--chat-open .chat-thinking,
+.app-shell--chat-open .chat-error { font-size: 10px; }
+.app-shell--chat-open .chat-composer textarea { min-height: 44px; padding: 10px; font-size: 11px; line-height: 1.4; }
+.app-shell--chat-open .chat-privacy { font-size: 8.5px; }
+.app-shell--chat-open .nino-caption { font-size: 9px; }
+.app-shell--chat-open .expression-button { font-size: 9px; }
 
 /* O palpite ocupa o painel reservado a controles, sem cobrir Nino ou expressões. */
 .control-panel--suggestion { padding: 9px; }
@@ -1957,19 +1961,20 @@ footer { display: none; }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* Em telas estreitas, conversar vira uma tela própria do dock em vez de uma sobreposição ambígua. */
+/* Em telas estreitas, o personagem é reduzido, mas nunca escondido pela conversa. */
 @media (max-width: 860px) {
   .app-shell { width: min(92vw, 420px); }
-  .app-shell--chat-open { overflow: hidden; }
-  .app-shell--chat-open .hero { visibility: hidden; pointer-events: none; }
-  .app-shell--chat-open .chat-lab {
-    top: 58px;
-    right: 8px;
-    bottom: 8px;
-    left: 8px;
-    width: auto;
-    max-height: none;
-  }
+  .app-shell--chat-open { top: 12px; bottom: 12px; }
+  .app-shell--chat-open .nino-3d { width: min(100%, 150px); }
+  .app-shell--chat-open .nino-stage { gap: 4px; padding-top: 1px; }
+  .app-shell--chat-open .nino-caption { padding-block: 4px; }
+  .app-shell--chat-open .expression-button { min-height: 26px; }
+}
+
+@media (max-height: 720px) {
+  .app-shell--chat-open .nino-3d { width: min(100%, 125px); }
+  .app-shell--chat-open .nino-stage { gap: 2px; }
+  .app-shell--chat-open .expression-button { min-height: 24px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
