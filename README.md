@@ -57,6 +57,10 @@ A rota publicada aceita somente `POST`, limita tamanho, origem e frequência bá
 
 ## Estado atual
 
+- Respostas completas e selecionáveis na conversa, com **Copiar resposta** (explicação e código), **Copiar conversa** e **Baixar .txt**. A legenda do personagem é um resumo; quando a conversa estiver fechada, **Ver resposta completa na conversa** reabre o histórico.
+- O histórico exibido preserva todas as mensagens desta página até recarregar; somente as oito últimas entram na próxima requisição. Novas respostas aparecem desde o início, e ferramentas/contexto ficam recolhidos para reservar espaço de leitura.
+- Comparador de voz, conversa, expressões extras, sugestões e avisos ocupam áreas próprias. Em janelas baixas, há rolagem em vez de sobreposição. Cópia integral validada no navegador; o teste automatizado do download `.txt` foi bloqueado pela política do navegador e precisa de confirmação manual.
+
 - O botão único **+ Anexar** identifica imagem ou código/texto pela extensão e valida o conteúdo antes do envio. Aceita PNG, JPEG e WebP até 10 MB, ou `.ino`, `.c`, `.cpp`, `.h`, `.hpp`, `.py`, `.js`, `.ts`, `.json` e `.txt` em UTF-8 até 64 KB e 24 mil caracteres. Arquivos maiores são recusados por inteiro, sem truncamento. Um anexo pode ser selecionado por vez.
 - O navegador redimensiona imagens para até 1600 px e as converte para JPEG de até 1 MB; o servidor valida formato, assinatura e tamanho.
 - A imagem selecionada acompanha as próximas perguntas até ser removida ou substituída. As miniaturas permanecem apenas no histórico em memória da página; nenhum arquivo é criado no servidor do projeto. Ao recarregar, as imagens são descartadas. O envio à OpenAI ocorre somente ao enviar uma mensagem, inclusive quando há apenas uma imagem selecionada.

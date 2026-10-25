@@ -2,6 +2,10 @@
 
 ## Próxima atualização
 
+- Revisão de todas as caixas de interação: comparador de voz e avisos deixam de flutuar; estilos antigos da legenda e expressões extras removidos do posicionamento.
+- Respostas abertas desde o começo, com ferramentas recolhidas e botões para copiar resposta, copiar conversa e baixar texto integral.
+- Histórico da página preserva toda a sessão para revisão e exportação; código mantém indentação e quebras de linha.
+
 - Botão unificado **+ Anexar** aceita imagens e arquivos de código/texto, com identificação automática e limites explícitos.
 - Código recebido integralmente até 64 KB/24 mil caracteres; correções formatadas em bloco próprio, com cópia e preservação no histórico. A voz lê a explicação.
 - Campo da conversa ampliado de 500 para 4000 caracteres.

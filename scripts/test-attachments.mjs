@@ -20,3 +20,13 @@ await assert.rejects(prepareLabAttachment(new File(['\u0000binary'], 'binario.c'
 await assert.rejects(prepareLabAttachment(new File([''], 'vazio.h')), /vazio/)
 await assert.rejects(prepareLabAttachment(new File(['texto'], 'documento.pdf')), /Formato/)
 console.log('Anexos: identificação por extensão, conteúdo integral, UTF-8, formatos e limites aprovados.')
+
+const { responseText, conversationText } = await import(moduleUrl(await compile('../src/conversationExport.ts')))
+const answer = { role: 'assistant', content: 'Botão pressionado = LOW.\nUse debounce.', code: 'void loop() {\n  ler_botao();\n}\n' }
+assert.equal(responseText(answer), `${answer.content}\n\n${answer.code}`)
+const messages = [{ role: 'user', content: 'Corrija o contador.', attachmentName: 'teste.ino' }, answer]
+const exported = conversationText(messages)
+assert.ok(exported.includes('Você\nAnexo: teste.ino\nCorrija o contador.'))
+assert.ok(exported.includes(`Nino\n${answer.content}\n\n${answer.code}`))
+assert.equal(conversationText([]), '')
+console.log('Revisão: exportação preserva resposta, código, indentação, acentos e ordem da conversa.')

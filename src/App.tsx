@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from 're
 import { NinoRealtimeVoice } from './realtimeVoice'
 import { askNino, type NinoChatMessage } from './ninoChat'
 import { prepareLabAttachment, attachmentAccept, type LabAttachment } from './labAttachment'
+import { responseText, conversationText, downloadConversation } from './conversationExport'
 
 type NinoMood = 'presente' | 'curioso' | 'animado' | 'pensando' | 'cochilando' | 'concentrado' | 'confuso' | 'acolhedor' | 'orgulhoso'
 type Gaze = 'esquerda' | 'centro' | 'direita'
@@ -695,6 +696,15 @@ function NinoFace({ mood, gaze, blinking, look, speaking, speechLevel }: {
   )
 }
 
+function CopyTextButton({ text, label }: { text: string; label: string }) {
+  const [status, setStatus] = useState('')
+  useEffect(() => setStatus(''), [text])
+  return <button type="button" aria-label={label} onClick={async () => {
+    try { await navigator.clipboard.writeText(text); setStatus('Copiado!') }
+    catch { setStatus('Selecione o texto para copiar') }
+  }}>{status || label}</button>
+}
+
 function App() {
   const [mood, setMood] = useState<NinoMood>('presente')
   const [gaze, setGaze] = useState<Gaze>('centro')
@@ -808,7 +818,7 @@ function App() {
 
     const history = chatMessages.slice(-8)
     const userMessage: NinoChatMessage = { role: 'user', content: message, image: chatImage, attachmentName: attachment?.name }
-    setChatMessages((current) => [...current, userMessage].slice(-10))
+    setChatMessages((current) => [...current, userMessage])
     setChatInput('')
     setChatError(null)
     setChatLoading(true)
@@ -823,7 +833,7 @@ function App() {
     try {
       const answer = await askNino(message, history, labContext, controller.signal, chatImage, chatCode)
       const assistantMessage: NinoChatMessage = { role: 'assistant', content: answer.reply, code: answer.code }
-      setChatMessages((current) => [...current, assistantMessage].slice(-10))
+      setChatMessages((current) => [...current, assistantMessage])
       setMood(answer.mood)
       setGaze(answer.mood === 'pensando' ? 'direita' : 'centro')
       setConversationCaption(answer.reply)
@@ -894,7 +904,7 @@ function App() {
   }, [mood])
 
   useEffect(() => {
-    if (!intuitionOn || chatOpen) {
+    if (!intuitionOn || chatOpen || voiceLabOpen) {
       setSuggestionIndex(null)
       return
     }
@@ -902,7 +912,7 @@ function App() {
     return () => {
       if (suggestionTimer.current) window.clearTimeout(suggestionTimer.current)
     }
-  }, [chatOpen, intuitionOn])
+  }, [chatOpen, voiceLabOpen, intuitionOn])
 
   useEffect(() => {
     if (!feedback) return
@@ -912,7 +922,9 @@ function App() {
 
   useEffect(() => {
     if (!chatOpen || !chatLog.current) return
-    chatLog.current.scrollTop = chatLog.current.scrollHeight
+    const log = chatLog.current
+    const last = log.lastElementChild
+    if (last) log.scrollTop += last.getBoundingClientRect().top - log.getBoundingClientRect().top
   }, [chatMessages, chatLoading, chatOpen])
 
   useEffect(() => {
@@ -967,7 +979,7 @@ function App() {
   }
 
   return (
-    <main className={`app-shell ${chatOpen ? 'app-shell--chat-open' : ''}`}>
+    <main className={`app-shell ${chatOpen ? 'app-shell--chat-open' : ''} ${chatOpen || voiceLabOpen ? 'app-shell--panel-open' : ''}`}>
       <header className="topbar">
         <a className="brand" href="#inicio" aria-label="Nino, início">
           <span className="brand-mark" aria-hidden="true">N</span>
@@ -995,7 +1007,7 @@ function App() {
             type="button"
             aria-label="Comparar vozes do Nino"
             title="Comparar vozes"
-            onClick={() => setVoiceLabOpen(true)}
+            onClick={() => { setChatOpen(false); setSuggestionIndex(null); setFeedback(null); setVoiceLabOpen(true) }}
           >
             <StatusIcon kind="tune" />
             Comparar vozes
@@ -1005,7 +1017,7 @@ function App() {
             type="button"
             aria-label="Conversar com o Nino"
             title="Conversar com o Nino"
-            onClick={() => { setVoiceLabOpen(false); setSuggestionIndex(null); setChatOpen(true) }}
+            onClick={() => { setVoiceLabOpen(false); setSuggestionIndex(null); setFeedback(null); setChatOpen(true) }}
           >
             <StatusIcon kind="chat" />
             Conversar
@@ -1014,7 +1026,7 @@ function App() {
       </header>
 
       {voiceLabOpen && (
-        <section className="voice-lab" role="dialog" aria-modal="true" aria-labelledby="voice-lab-title">
+        <section className="voice-lab" aria-labelledby="voice-lab-title">
           <div className="voice-lab-heading">
             <div>
               <p>TESTE DE PERSONALIDADE</p>
@@ -1050,7 +1062,7 @@ function App() {
       )}
 
       {chatOpen && (
-        <section className="chat-lab" role="dialog" aria-modal="true" aria-labelledby="chat-lab-title">
+        <section className="chat-lab" aria-labelledby="chat-lab-title">
           <div className="chat-lab-heading">
             <div>
               <p>COPILOTO DE LABORATÓRIO</p>
@@ -1062,6 +1074,12 @@ function App() {
               onClick={() => { chatAbort.current?.abort(); setChatLoading(false); setChatOpen(false) }}
             >×</button>
           </div>
+          <div className="conversation-actions" aria-label="Revisar conversa">
+            <CopyTextButton text={conversationText(chatMessages)} label="Copiar conversa" />
+            <button type="button" onClick={() => downloadConversation(chatMessages)}>Baixar .txt</button>
+          </div>
+          <details className="lab-tools-disclosure">
+            <summary>Ferramentas e contexto{labContextCount ? ` · ${labContextCount}` : ''}</summary>
           <div className="lab-tools" aria-label="Modo Bancada">
             <div className="lab-tools-heading">
               <span>ATALHOS TÉCNICOS</span>
@@ -1094,18 +1112,17 @@ function App() {
               </div>
             )}
           </div>
+          </details>
           <div className="chat-log" role="log" aria-live="polite" ref={chatLog}>
             {chatMessages.map((message, index) => (
               <div className={`chat-bubble chat-bubble--${message.role}`} key={`${message.role}-${index}`}>
-                <strong>{message.role === 'assistant' ? 'Nino' : 'Você'}</strong>
+                <div className="chat-bubble-heading"><strong>{message.role === 'assistant' ? 'Nino' : 'Você'}</strong>
+                  {message.role === 'assistant' && <CopyTextButton text={responseText(message)} label="Copiar resposta" />}
+                </div>
                 {message.image && <img className="chat-image-sent" src={message.image} alt="Imagem enviada da bancada" />}
                 {message.attachmentName && <small className="chat-attachment-name">Anexo: {message.attachmentName}</small>}
                 <span>{message.content}</span>
-                {message.code && <div className="chat-code-result"><button type="button" onClick={async (event) => {
-                  const button = event.currentTarget
-                  try { await navigator.clipboard.writeText(message.code!); button.textContent = 'Copiado' }
-                  catch { button.textContent = 'Selecione o código para copiar' }
-                }}>Copiar código</button><pre><code>{message.code}</code></pre></div>}
+                {message.code && <div className="chat-code-result"><CopyTextButton text={message.code} label="Copiar código" /><pre><code>{message.code}</code></pre></div>}
               </div>
             ))}
             {chatLoading && <p className="chat-thinking"><span /><span /><span /> Pensando…</p>}
@@ -1142,7 +1159,6 @@ function App() {
                 }
               }}
               rows={2}
-              autoFocus
               placeholder="Descreva o circuito, firmware ou teste…"
               aria-label="Mensagem para o Nino"
             />
@@ -1195,6 +1211,7 @@ function App() {
             <span className="caption-indicator" />
             <span className="caption-text">{conversationCaption ?? moodCaptions[mood]}</span>
           </div>
+          {conversationCaption && !chatOpen && <button className="caption-review" type="button" onClick={() => { setVoiceLabOpen(false); setChatOpen(true); setFeedback(null); setSuggestionIndex(null) }}>Ver resposta completa na conversa</button>}
           {moreOpen && (
             <div className="expression-more" id="mais-expressoes" role="group" aria-label="Mais expressões do Nino">
               {extraExpressionOptions.map((option) => (
@@ -1235,6 +1252,7 @@ function App() {
               Mais
             </button>
           </div>
+          {feedback && <div className="feedback-inline" role="status"><span>{feedback}</span><button type="button" onClick={() => setFeedback(null)} aria-label="Fechar aviso">×</button></div>}
         </div>
 
         <div className={`control-panel ${suggestion && intuitionOn ? 'control-panel--suggestion' : ''}`} aria-label="Painel de demonstração">
@@ -1310,12 +1328,6 @@ function App() {
         </article>
       </section>
 
-      {feedback && (
-        <div className="feedback-toast" role="status">
-          <span>{feedback}</span>
-          <button type="button" onClick={() => setFeedback(null)} aria-label="Fechar aviso">×</button>
-        </div>
-      )}
 
       <footer>
         <span>NINO / PRESENÇA + EXPRESSÕES</span>
