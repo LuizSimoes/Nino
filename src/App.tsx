@@ -641,7 +641,12 @@ function NinoFace({ mood, gaze, blinking, look, speaking, speechLevel }: {
       </g>
 
       {animated && <g className="dog-sparks"><path d="M43 100v-18M34 91h18M267 105l13-13M267 92l13 13" /></g>}
+      {curious && <g className="dog-reaction-icons dog-reaction-icons--curious"><text x="39" y="112">?</text><text x="272" y="91">+</text></g>}
       {thinking && <g className="dog-thoughts"><circle cx="255" cy="200" r="5" /><circle cx="273" cy="184" r="8" /><circle cx="292" cy="159" r="11" /></g>}
+      {focused && <g className="dog-reaction-icons dog-reaction-icons--focused"><text x="39" y="115">+</text><text x="270" y="102">+</text></g>}
+      {confused && <g className="dog-reaction-icons dog-reaction-icons--confused"><text x="36" y="111">×</text><text x="271" y="96">?</text></g>}
+      {comforting && <g className="dog-reaction-icons dog-reaction-icons--comforting"><text x="34" y="111">♥</text><text x="269" y="94">♥</text></g>}
+      {proud && <g className="dog-reaction-icons dog-reaction-icons--proud"><text x="34" y="111">★</text><text x="267" y="92">★</text></g>}
       {asleep && <g className="dog-sleep"><text x="253" y="130">z</text><text x="274" y="100">z</text><text x="292" y="65">Z</text></g>}
     </svg>
   )

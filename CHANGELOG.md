@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## Próxima atualização
+
+- Fala literal reforçada para evitar complementos improvisados.
+- Sincronização da boca preservada em falas longas até o áudio terminar de fato.
+- Novos símbolos ambientais para Curioso, Concentrado, Confuso, Acolhedor e Orgulhoso.
+- Primeiro teste de usuário registrado em `docs/FEEDBACK_TESTES.md`.
+
 ## 0.1.0 — Primeiro Contato
 
 Versão validada em celular e desktop em 25 de outubro de 2026.

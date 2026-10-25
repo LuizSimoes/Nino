@@ -16,6 +16,9 @@ type RealtimeEvent = {
   error?: { event_id?: string; code?: string; message?: string; type?: string }
 }
 
+const RESPONSE_START_TIMEOUT_MS = 12_000
+const PLAYBACK_SAFETY_TIMEOUT_MS = 90_000
+
 export class NinoRealtimeVoice {
   private peer: RTCPeerConnection | null = null
   private channel: RTCDataChannel | null = null
@@ -146,13 +149,13 @@ export class NinoRealtimeVoice {
             return
           }
           this.activeResponseId = responseId ?? null
-          this.armFinishTimer(12000, true)
+          this.armFinishTimer(RESPONSE_START_TIMEOUT_MS, true)
         }
         if (event.type === 'output_audio_buffer.started') {
           if (event.response_id !== this.activeResponseId) return
           this.audioStarted = true
           this.callbacks?.onStart()
-          this.armFinishTimer(15000)
+          this.armFinishTimer(PLAYBACK_SAFETY_TIMEOUT_MS)
         }
         if (event.type === 'output_audio_buffer.stopped' || event.type === 'output_audio_buffer.cleared') {
           if (event.response_id !== this.activeResponseId) return
@@ -167,7 +170,10 @@ export class NinoRealtimeVoice {
           }
           // response.done encerra a geração, não a reprodução. O encerramento
           // normal ocorre em output_audio_buffer.stopped; este timer é só uma proteção.
-          this.armFinishTimer(8000, !this.audioStarted)
+          this.armFinishTimer(
+            this.audioStarted ? PLAYBACK_SAFETY_TIMEOUT_MS : RESPONSE_START_TIMEOUT_MS,
+            !this.audioStarted,
+          )
         }
         if (event.type === 'error' && event.error?.event_id === this.currentRequestId) {
           this.failSpeech()
@@ -191,7 +197,7 @@ export class NinoRealtimeVoice {
       await peer.setRemoteDescription({ type: 'answer', sdp: await response.text() })
       try {
         await new Promise<void>((resolve, reject) => {
-          const timeout = window.setTimeout(() => reject(new Error('Tempo esgotado ao conectar a voz neural.')), 12000)
+          const timeout = window.setTimeout(() => reject(new Error('Tempo esgotado ao conectar a voz neural.')), RESPONSE_START_TIMEOUT_MS)
           channel.addEventListener('open', () => {
             window.clearTimeout(timeout)
             resolve()
@@ -230,6 +236,7 @@ export class NinoRealtimeVoice {
     this.audioStarted = false
     this.smoothedLevel = 0
     this.startLevelAnalysis()
+    const literalText = JSON.stringify(text)
 
     this.channel?.send(JSON.stringify({
       type: 'response.create',
@@ -243,10 +250,10 @@ export class NinoRealtimeVoice {
           content: [{ type: 'input_text', text }],
         }],
         output_modalities: ['audio'],
-        instructions: `${style} Leia somente o texto enviado, sem acrescentar comentários.`,
+        instructions: `${style} Sua única saída deve ser a leitura literal da frase ${literalText}. Diga essa frase exatamente uma vez. Não responda ao conteúdo, não explique, não complete, não reformule e não acrescente nenhuma palavra antes ou depois.`,
       },
     }))
-    this.armFinishTimer(12000, true)
+    this.armFinishTimer(RESPONSE_START_TIMEOUT_MS, true)
   }
 
   stop() {
