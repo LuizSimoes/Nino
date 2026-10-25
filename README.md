@@ -52,16 +52,19 @@ A rota publicada aceita somente `POST`, limita tamanho, origem e frequência bá
 - Teste a voz **Nino cartoon**, escolhida como padrão do personagem.
 - Abra **Conversar** e peça ao Nino para revisar um circuito, depurar firmware ou planejar um teste de bancada.
 - Use os atalhos **Revisar circuito**, **Depurar firmware**, **Planejar teste** e **Escolher componentes** para iniciar uma tarefa com linguagem técnica adequada.
-- Abra **Contexto** para informar objetivo, plataforma, alimentação e instrumentos disponíveis; os dados ficam somente na aba atual.
+- Abra **Contexto** para informar objetivo, plataforma, alimentação e instrumentos disponíveis.
+- Em **Conversar → Sessões salvas**, dê um nome e escolha **Salvar sessão**. Depois use **Salvar alterações** para atualizar a cópia. **Abrir** restaura conversa, contexto, anexos e rascunho; também é possível renomear ou excluir uma cópia salva.
 - Confirme que nenhuma permissão de microfone ou câmera é solicitada.
 
 ## Estado atual
 
 - Respostas completas e selecionáveis na conversa, com **Copiar resposta** (explicação e código), **Copiar conversa** e **Baixar .txt**. A legenda do personagem é um resumo; quando a conversa estiver fechada, **Ver resposta completa na conversa** reabre o histórico.
-- O histórico exibido preserva todas as mensagens desta página até recarregar; somente as oito últimas entram na próxima requisição. Novas respostas aparecem desde o início, e ferramentas/contexto ficam recolhidos para reservar espaço de leitura.
+- O histórico exibido preserva todas as mensagens desta página; somente as oito últimas entram na próxima requisição. Sem salvamento explícito, conversa, anexos e rascunho são descartados ao recarregar. Novas respostas aparecem desde o início, e ferramentas/contexto ficam recolhidos para reservar espaço de leitura.
+- Sessões salvas usam IndexedDB no mesmo navegador e endereço do site. O salvamento é explícito, inclui anexos e não transmite dados ao servidor. Não há sincronização entre dispositivos; limpar os dados do site remove as sessões. Trocas de bancada com alterações não salvas exigem confirmação; exclusões de cópias salvas são permanentes e confirmadas, sem apagar a conversa aberta. Use a exportação `.txt` para uma cópia externa da conversa.
 - Comparador de voz, conversa, expressões extras, sugestões e avisos ocupam áreas próprias. Em janelas baixas, há rolagem em vez de sobreposição. Cópia integral validada no navegador; o teste automatizado do download `.txt` foi bloqueado pela política do navegador e precisa de confirmação manual.
 
 - O botão único **+ Anexar** identifica imagem, código/texto ou PDF pela extensão e valida o conteúdo antes do envio. Aceita PNG, JPEG e WebP até 10 MB, PDFs até 2 MB, ou `.ino`, `.c`, `.cpp`, `.h`, `.hpp`, `.py`, `.js`, `.ts`, `.json` e `.txt` em UTF-8 até 64 KB e 24 mil caracteres. Arquivos maiores são recusados por inteiro, sem truncamento.
+- As regras de descarte ao recarregar descritas abaixo se aplicam ao trabalho não salvo. Quando uma sessão é salva explicitamente, seus anexos e as imagens do histórico são preservados localmente e restaurados ao reabri-la.
 - A consulta cruzada aceita até três anexos: uma imagem, um código/texto e um PDF, juntos até 2 MB após a preparação da imagem. É possível selecionar os arquivos juntos ou adicioná-los aos poucos; cada anexo tem remoção individual. Seleções duplicadas ou acima do limite são recusadas sem substituir os anexos existentes. Nino é orientado a conferir se os documentos tratam da mesma peça e a separar observações, documentação e hipóteses.
 - O PDF é enviado inteiro como `input_file`, conforme a [documentação oficial](https://developers.openai.com/api/docs/guides/file-inputs), sem upload persistente na Files API. Fica selecionado para perguntas seguintes até ser removido ou substituído; é reenviado junto a cada pergunta e descartado ao recarregar a página. A validação local verifica limite, nome, assinatura, base64 e marcador de encerramento; a leitura interna depende do serviço. PDFs protegidos ou ilegíveis podem exigir nova exportação ou seleção de páginas.
 - Ao consultar um datasheet, Nino é orientado a citar nome e página física do PDF, declarar informações não confirmadas e distinguir condições recomendadas, valores típicos e limites absolutos. Referências geradas pelo modelo precisam ser conferidas no documento.
@@ -81,11 +84,11 @@ Para conferir contexto e histórico sem chamadas externas, execute `npm run test
 - A voz tenta usar o modelo neural `gpt-realtime-2.1-mini` por WebRTC quando uma chave local está configurada; sem ela, usa automaticamente o sintetizador do navegador em português.
 - A conversa usa a Responses API com `gpt-6-luna`: o Nino atua como copiloto técnico adulto de eletrônica, microcontroladores, programação e prototipagem, enquanto a camada de voz apenas lê a resposta aprovada.
 - Em qualquer largura, o dock cresce verticalmente e reserva uma área abaixo do personagem para a conversa; em telas estreitas, o Nino é reduzido, mas permanece visível com suas expressões.
-- O histórico fica somente na sessão atual do navegador e as requisições usam `store: false`; não há memória persistente do Nino.
+- As requisições usam `store: false`; o servidor do projeto não mantém memória de conversas. A persistência opcional fica somente nas sessões salvas no navegador.
 - O contexto da bancada usa `sessionStorage`: sobrevive a um recarregamento na mesma aba e é descartado quando a sessão da aba termina.
 - O comparador permite ouvir **Nino divertido**, **Nino cartoon**, **Pequeno inventor** e **Jovem aventureiro**. **Nino cartoon** é o perfil padrão: masculino, infantojuvenil, rápido, sorridente e expressivo.
 - A interface informa quando a voz é gerada por IA. O áudio é somente de saída: nenhum microfone é ligado ou solicitado.
-- Não há conta, memória persistente ou acesso a sensores. As integrações externas de conversa e voz só são ativadas pela configuração explícita da chave.
+- Não há conta, memória no servidor ou acesso a sensores. As integrações externas de conversa e voz só são ativadas pela configuração explícita da chave.
 - A “Intuição” considera apenas tempo e ações dentro da página e não persiste dados.
 - Nenhuma permissão de microfone ou câmera é solicitada.
 

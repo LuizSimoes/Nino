@@ -60,3 +60,23 @@ assert.ok(exported.includes('Você\nAnexo: teste.ino\nCorrija o contador.'))
 assert.ok(exported.includes(`Nino\n${answer.content}\n\n${answer.code}`))
 assert.equal(conversationText([]), '')
 console.log('Revisão: exportação preserva resposta, código, indentação, acentos e ordem da conversa.')
+
+const sessionsSource = (await compile('../src/labSessions.ts')).replace(/['"]\.\/labAttachment['"]/, JSON.stringify(moduleUrl(attachmentSource)))
+const { packSession, unpackSession } = await import(moduleUrl(sessionsSource))
+const snapshot = {
+  messages: [{ role: 'user', content: 'Veja o esquema.', image: imageAttachment.image }, { role: 'assistant', content: 'Primeira análise.', image: imageAttachment.image, code: answer.code }],
+  context: { objective: 'Controlar temperatura', platform: 'ESP32', power: '3,3 V', instruments: 'Multímetro' },
+  attachments: combined,
+  draft: 'x'.repeat(4100),
+}
+const savedSession = packSession(snapshot, '  Bancada de teste  ', 'test-session')
+assert.equal(savedSession.images.length, 1)
+assert.equal(savedSession.name, 'Bancada de teste')
+assert.deepEqual(unpackSession(savedSession), snapshot)
+savedSession.context.platform = 'RP2040'
+assert.equal(snapshot.context.platform, 'ESP32')
+assert.throws(() => unpackSession({ ...savedSession, version: 9 }), /formato inválido/)
+assert.throws(() => unpackSession({ ...savedSession, images: ['https://example.com/remote.png'] }), /imagem da sessão/)
+assert.throws(() => unpackSession({ ...savedSession, images: [] }), /imagem da sessão/)
+assert.throws(() => unpackSession({ ...savedSession, context: { ...savedSession.context, power: null } }), /contexto da sessão/)
+console.log('Sessões: conversa, contexto, rascunho e três anexos preservados; imagens deduplicadas e dados inválidos rejeitados.')

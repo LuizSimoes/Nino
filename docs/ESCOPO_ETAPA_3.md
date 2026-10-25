@@ -13,12 +13,14 @@ Transformar a conversa do Nino em uma ferramenta de trabalho para eletrônica, m
 - Interface responsiva com o Nino e as expressões sempre visíveis acima da conversa.
 - Anexo PDF de até 2 MB no botão unificado, com consulta por perguntas, orientação de referências por página e erros de leitura/tamanho.
 - Consulta cruzada: uma imagem, um código e um PDF simultâneos, com limite conjunto de 2 MB após preparação e remoção individual.
+- Sessões locais opcionais em IndexedDB, com conversa integral, contexto, anexos e rascunho; salvar, reabrir, renomear e excluir com confirmação.
+- Proteção contra troca de bancada com alterações não salvas, sem janelas sobrepostas.
 
 ## Critérios de validação
 
 1. Um atalho preenche o campo de mensagem e permite edição antes do envio.
 2. O contexto informado influencia a resposta sem ser repetido desnecessariamente.
-3. Fechar a aba encerra o contexto; nenhuma informação é persistida pelo servidor.
+3. Fechar a aba encerra o contexto temporário; sessões explicitamente salvas podem ser reabertas no mesmo navegador. Nenhuma sessão é persistida pelo servidor do projeto.
 4. A conversa continua utilizável em 390 px, 540 px e 760 px de largura.
 5. A resposta respeita limites elétricos e solicita confirmação quando faltarem dados críticos.
 

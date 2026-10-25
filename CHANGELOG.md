@@ -2,6 +2,9 @@
 
 ## Próxima atualização
 
+- Sessões de bancada salvas explicitamente neste navegador: conversa completa, contexto, anexos e rascunho, com reabertura, renomeação e exclusão confirmada.
+- Aviso antes de trocar de bancada com alterações não salvas; painel integrado ao fluxo, sem sobrepor o personagem. Sem sincronização ou armazenamento de sessões no servidor.
+
 - Consulta cruzada com imagem, código e PDF na mesma pergunta; seleção múltipla/incremental e remoção individual pelo botão unificado.
 - Limite total de 2 MB após preparação, validado no navegador e servidor; seleção inválida preserva os anexos anteriores.
 - Nino orientado a confrontar fontes, conferir a identificação dos componentes e citar páginas do PDF.

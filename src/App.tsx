@@ -3,6 +3,8 @@ import { NinoRealtimeVoice } from './realtimeVoice'
 import { askNino, type NinoChatMessage } from './ninoChat'
 import { prepareLabAttachment, mergeLabAttachments, attachmentBytes, attachmentAccept, type LabAttachment } from './labAttachment'
 import { responseText, conversationText, downloadConversation } from './conversationExport'
+import { LabSessionsPanel } from './LabSessionsPanel'
+import type { LabSnapshot } from './labSessions'
 
 type NinoMood = 'presente' | 'curioso' | 'animado' | 'pensando' | 'cochilando' | 'concentrado' | 'confuso' | 'acolhedor' | 'orgulhoso'
 type Gaze = 'esquerda' | 'centro' | 'direita'
@@ -744,6 +746,23 @@ function App() {
   const chatLog = useRef<HTMLDivElement | null>(null)
   const chatInputRef = useRef<HTMLTextAreaElement | null>(null)
 
+  const restoreSnapshot = (snapshot: LabSnapshot) => {
+    speechToken.current += 1
+    neuralVoice.current?.stop()
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel()
+    if (activityTimer.current) window.clearTimeout(activityTimer.current)
+    speechLevel.current = 0
+    setSpeaking(false)
+    setChatMessages(snapshot.messages)
+    setLabContext(snapshot.context)
+    setAttachments(snapshot.attachments)
+    setChatInput(snapshot.draft)
+    setChatError(null)
+    setConversationCaption(snapshot.messages.filter((message) => message.role === 'assistant').at(-1)?.content ?? null)
+    setMood('presente'); setGaze('centro'); setMoreOpen(false); setLabContextOpen(false)
+    setSuggestionIndex(null); setFeedback(null)
+  }
+
   const playSpeech = useCallback((text: string, profile: VoiceProfile, nextMood: NinoMood = 'presente') => {
     const token = speechToken.current + 1
     speechToken.current = token
@@ -1065,8 +1084,7 @@ function App() {
         </section>
       )}
 
-      {chatOpen && (
-        <section className="chat-lab" aria-labelledby="chat-lab-title">
+        <section hidden={!chatOpen} className="chat-lab" aria-labelledby="chat-lab-title">
           <div className="chat-lab-heading">
             <div>
               <p>COPILOTO DE LABORATÓRIO</p>
@@ -1082,6 +1100,11 @@ function App() {
             <CopyTextButton text={conversationText(chatMessages)} label="Copiar conversa" />
             <button type="button" onClick={() => downloadConversation(chatMessages)}>Baixar .txt</button>
           </div>
+          <LabSessionsPanel snapshot={{ messages: chatMessages, context: labContext, attachments, draft: chatInput }} busy={chatLoading || imagePreparing} onRestore={restoreSnapshot} onNew={() => {
+            const blank: LabSnapshot = { messages: [initialChatMessage], context: { ...emptyLabContext }, attachments: [], draft: '' }
+            restoreSnapshot(blank)
+            return blank
+          }} />
           <details className="lab-tools-disclosure">
             <summary>Ferramentas e contexto{labContextCount ? ` · ${labContextCount}` : ''}</summary>
           <div className="lab-tools" aria-label="Modo Bancada">
@@ -1104,7 +1127,7 @@ function App() {
                 <label>Alimentação<input value={labContext.power} onChange={(event) => updateLabContext('power', event.target.value)} placeholder="Ex.: 12 V e 3,3 V" /></label>
                 <label>Instrumentos<input value={labContext.instruments} onChange={(event) => updateLabContext('instruments', event.target.value)} placeholder="Ex.: multímetro e osciloscópio" /></label>
                 <div className="lab-context-footer">
-                  <small>Fica somente nesta aba.</small>
+                  <small>Temporário até você salvar uma sessão.</small>
                   {labContextCount > 0 && <button type="button" onClick={() => setLabContext(emptyLabContext)}>Limpar</button>}
                 </div>
               </div>
@@ -1180,9 +1203,8 @@ function App() {
             />
             <button type="submit" disabled={chatLoading || imagePreparing || chatInput.length > 4000 || (!chatInput.trim() && !attachments.length)} aria-label="Enviar mensagem">↑</button>
           </form>
-          <small className="chat-privacy">{labContextCount ? 'Contexto temporário nesta aba' : 'Sem memória persistente'} · mensagens e anexos enviados são processados pela OpenAI</small>
+          <small className="chat-privacy">Salvamento local opcional · mensagens e anexos enviados são processados pela OpenAI</small>
         </section>
-      )}
 
       <section className="hero" id="inicio">
         <div className="intro-copy">
