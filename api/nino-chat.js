@@ -105,7 +105,7 @@ export default async function ninoChat(request, response) {
 
   try {
     const payload = await readJson(request)
-    const conversation = sanitizeConversation(payload?.message, payload?.history)
+    const conversation = sanitizeConversation(payload?.message, payload?.history, payload?.context)
     if (!conversation.message || conversation.message.length > NINO_CHAT_MAX_MESSAGE_CHARS) {
       sendJson(response, 400, { error: 'Escreva uma mensagem de até 500 caracteres.' })
       return

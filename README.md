@@ -1,6 +1,6 @@
-# Nino v0.1 — Primeiro Contato
+# Nino v0.2 — Modo Bancada
 
-Protótipo do Nino: um personagem canino com aparência 3D inspirado na memória afetiva de um mestiço de Golden Retriever. A experiência apresenta nove estados emocionais, olhar responsivo, microcomportamentos de repouso, pingente expressivo, conversa criativa, voz opcional e uma demonstração controlável de Intuição local.
+Protótipo do Nino: um personagem canino com aparência 3D inspirado na memória afetiva de um mestiço de Golden Retriever. Além das nove expressões, voz e Intuição local, o Modo Bancada oferece atalhos técnicos e um contexto temporário para circuitos, firmware e testes.
 
 ## Executar no macOS
 
@@ -51,6 +51,8 @@ A rota publicada aceita somente `POST`, limita tamanho, origem e frequência bá
 - Pause e reative a Intuição no controle **Ativa/Pausada**.
 - Teste a voz **Nino cartoon**, escolhida como padrão do personagem.
 - Abra **Conversar** e peça ao Nino para revisar um circuito, depurar firmware ou planejar um teste de bancada.
+- Use os atalhos **Revisar circuito**, **Depurar firmware**, **Planejar teste** e **Escolher componentes** para iniciar uma tarefa com linguagem técnica adequada.
+- Abra **Contexto** para informar objetivo, plataforma, alimentação e instrumentos disponíveis; os dados ficam somente na aba atual.
 - Confirme que nenhuma permissão de microfone ou câmera é solicitada.
 
 ## Estado atual
@@ -64,6 +66,7 @@ A rota publicada aceita somente `POST`, limita tamanho, origem e frequência bá
 - A conversa usa a Responses API com `gpt-6-luna`: o Nino atua como copiloto técnico adulto de eletrônica, microcontroladores, programação e prototipagem, enquanto a camada de voz apenas lê a resposta aprovada.
 - Em qualquer largura, o dock cresce verticalmente e reserva uma área abaixo do personagem para a conversa; em telas estreitas, o Nino é reduzido, mas permanece visível com suas expressões.
 - O histórico fica somente na sessão atual do navegador e as requisições usam `store: false`; não há memória persistente do Nino.
+- O contexto da bancada usa `sessionStorage`: sobrevive a um recarregamento na mesma aba e é descartado quando a sessão da aba termina.
 - O comparador permite ouvir **Nino divertido**, **Nino cartoon**, **Pequeno inventor** e **Jovem aventureiro**. **Nino cartoon** é o perfil padrão: masculino, infantojuvenil, rápido, sorridente e expressivo.
 - A interface informa quando a voz é gerada por IA. O áudio é somente de saída: nenhum microfone é ligado ou solicitado.
 - Não há conta, memória persistente ou acesso a sensores. As integrações externas de conversa e voz só são ativadas pela configuração explícita da chave.

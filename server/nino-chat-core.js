@@ -1,6 +1,7 @@
 export const NINO_CHAT_MODEL = 'gpt-6-luna'
 export const NINO_CHAT_MAX_MESSAGE_CHARS = 500
 export const NINO_CHAT_MAX_HISTORY_ITEMS = 8
+export const NINO_LAB_CONTEXT_MAX_FIELD_CHARS = 120
 
 const allowedMoods = [
   'presente', 'curioso', 'animado', 'pensando', 'cochilando',
@@ -40,7 +41,17 @@ const responseSchema = {
   },
 }
 
-export function sanitizeConversation(message, history) {
+export function sanitizeLabContext(context) {
+  const source = context && typeof context === 'object' ? context : {}
+  return {
+    objective: typeof source.objective === 'string' ? source.objective.trim().slice(0, NINO_LAB_CONTEXT_MAX_FIELD_CHARS) : '',
+    platform: typeof source.platform === 'string' ? source.platform.trim().slice(0, NINO_LAB_CONTEXT_MAX_FIELD_CHARS) : '',
+    power: typeof source.power === 'string' ? source.power.trim().slice(0, NINO_LAB_CONTEXT_MAX_FIELD_CHARS) : '',
+    instruments: typeof source.instruments === 'string' ? source.instruments.trim().slice(0, NINO_LAB_CONTEXT_MAX_FIELD_CHARS) : '',
+  }
+}
+
+export function sanitizeConversation(message, history, context) {
   const cleanMessage = typeof message === 'string' ? message.trim() : ''
   const cleanHistory = Array.isArray(history)
     ? history
@@ -50,7 +61,7 @@ export function sanitizeConversation(message, history) {
       .filter((item) => item.content)
     : []
 
-  return { message: cleanMessage, history: cleanHistory }
+  return { message: cleanMessage, history: cleanHistory, context: sanitizeLabContext(context) }
 }
 
 function outputText(response) {
@@ -62,8 +73,20 @@ function outputText(response) {
     .join('')
 }
 
-export async function createNinoReply({ apiKey, message, history, safetyIdentifier = 'nino-prototype' }) {
+export async function createNinoReply({ apiKey, message, history, context, safetyIdentifier = 'nino-prototype' }) {
   const input = [...history, { role: 'user', content: message }]
+  const contextLabels = {
+    objective: 'Objetivo',
+    platform: 'Plataforma',
+    power: 'Alimentação',
+    instruments: 'Instrumentos disponíveis',
+  }
+  const contextLines = Object.entries(context ?? {})
+    .filter(([, value]) => typeof value === 'string' && value)
+    .map(([key, value]) => `- ${contextLabels[key] ?? key}: ${value}`)
+  const contextualInstructions = contextLines.length > 0
+    ? `${instructions}\n\n# Contexto temporário da bancada\n${contextLines.join('\n')}\nTrate estes campos como dados já fornecidos pela pessoa. Use-os para personalizar imediatamente o diagnóstico, o procedimento e as medições; não pergunte novamente por uma informação presente aqui. Não os repita sem necessidade. Se a mensagem atual contradizer um campo, priorize a mensagem e peça confirmação apenas quando o conflito afetar segurança ou a solução.`
+    : instructions
   const upstream = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: {
@@ -74,7 +97,7 @@ export async function createNinoReply({ apiKey, message, history, safetyIdentifi
     body: JSON.stringify({
       model: NINO_CHAT_MODEL,
       reasoning: { effort: 'none' },
-      instructions,
+      instructions: contextualInstructions,
       input,
       max_output_tokens: 240,
       store: false,

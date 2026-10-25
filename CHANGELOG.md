@@ -2,6 +2,9 @@
 
 ## Próxima atualização
 
+- Modo Bancada iniciado com quatro atalhos técnicos para tarefas recorrentes.
+- Ficha temporária adicionada para objetivo, plataforma, alimentação e instrumentos disponíveis.
+- Contexto técnico enviado em cada pergunta quando relevante, sem memória permanente ou armazenamento no servidor.
 - Breakpoint estreito corrigido: reduzir a largura da janela não esconde mais o Nino atrás da conversa.
 - Durante a conversa, o painel de demonstração dá lugar ao diálogo; personagem e expressões permanecem visíveis.
 - Tipografia da conversa ampliada para melhorar a leitura em janelas estreitas e telas de alta resolução.

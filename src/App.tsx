@@ -5,6 +5,7 @@ import { askNino, type NinoChatMessage } from './ninoChat'
 type NinoMood = 'presente' | 'curioso' | 'animado' | 'pensando' | 'cochilando' | 'concentrado' | 'confuso' | 'acolhedor' | 'orgulhoso'
 type Gaze = 'esquerda' | 'centro' | 'direita'
 type LookOffset = { x: number; y: number }
+type LabContext = { objective: string; platform: string; power: string; instruments: string }
 
 const expressionOptions: Array<{ mood: NinoMood; label: string; symbol: string }> = [
   { mood: 'presente', label: 'De boa', symbol: '•' },
@@ -98,6 +99,30 @@ const voiceSample = 'Bancada pronta. Qual circuito vamos colocar à prova hoje?'
 const initialChatMessage: NinoChatMessage = {
   role: 'assistant',
   content: 'Bancada pronta. Quer revisar um circuito, depurar firmware ou transformar uma ideia em protótipo?',
+}
+
+const emptyLabContext: LabContext = { objective: '', platform: '', power: '', instruments: '' }
+const labShortcuts = [
+  { label: 'Revisar circuito', prompt: 'Quero revisar um circuito. Comece identificando os blocos críticos e as medições que devo fazer.' },
+  { label: 'Depurar firmware', prompt: 'Quero depurar um firmware. Ajude-me a isolar a falha com o menor teste reproduzível.' },
+  { label: 'Planejar teste', prompt: 'Quero planejar um teste de bancada com hipótese, instrumentos, procedimento e critério de aprovação.' },
+  { label: 'Escolher componentes', prompt: 'Quero escolher componentes para um projeto. Compare as opções pelos requisitos elétricos e pelas margens de segurança.' },
+]
+
+function storedLabContext(): LabContext {
+  try {
+    const stored = window.sessionStorage.getItem('nino-lab-context-v1')
+    if (!stored) return emptyLabContext
+    const parsed = JSON.parse(stored) as Partial<LabContext>
+    return {
+      objective: typeof parsed.objective === 'string' ? parsed.objective.slice(0, 120) : '',
+      platform: typeof parsed.platform === 'string' ? parsed.platform.slice(0, 120) : '',
+      power: typeof parsed.power === 'string' ? parsed.power.slice(0, 120) : '',
+      instruments: typeof parsed.instruments === 'string' ? parsed.instruments.slice(0, 120) : '',
+    }
+  } catch {
+    return emptyLabContext
+  }
 }
 
 function StatusIcon({ kind }: { kind: 'mic' | 'camera' | 'voice' | 'tune' | 'chat' }) {
@@ -686,6 +711,8 @@ function App() {
   const [chatInput, setChatInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
   const [chatError, setChatError] = useState<string | null>(null)
+  const [labContext, setLabContext] = useState<LabContext>(storedLabContext)
+  const [labContextOpen, setLabContextOpen] = useState(false)
   const [conversationCaption, setConversationCaption] = useState<string | null>(null)
   const [voiceEngine, setVoiceEngine] = useState<VoiceEngine>('local')
   const [speaking, setSpeaking] = useState(false)
@@ -696,6 +723,7 @@ function App() {
   const neuralVoice = useRef<NinoRealtimeVoice | null>(null)
   const chatAbort = useRef<AbortController | null>(null)
   const chatLog = useRef<HTMLDivElement | null>(null)
+  const chatInputRef = useRef<HTMLTextAreaElement | null>(null)
 
   const playSpeech = useCallback((text: string, profile: VoiceProfile, nextMood: NinoMood = 'presente') => {
     const token = speechToken.current + 1
@@ -784,7 +812,7 @@ function App() {
     chatAbort.current = controller
 
     try {
-      const answer = await askNino(message, history, controller.signal)
+      const answer = await askNino(message, history, labContext, controller.signal)
       const assistantMessage: NinoChatMessage = { role: 'assistant', content: answer.reply }
       setChatMessages((current) => [...current, assistantMessage].slice(-10))
       setMood(answer.mood)
@@ -878,6 +906,10 @@ function App() {
     chatLog.current.scrollTop = chatLog.current.scrollHeight
   }, [chatMessages, chatLoading, chatOpen])
 
+  useEffect(() => {
+    window.sessionStorage.setItem('nino-lab-context-v1', JSON.stringify(labContext))
+  }, [labContext])
+
   useEffect(() => () => {
     if (activityTimer.current) window.clearTimeout(activityTimer.current)
     speechToken.current += 1
@@ -898,6 +930,16 @@ function App() {
 
   const suggestion = suggestionIndex === null ? null : suggestions[suggestionIndex]
   const extraMoodActive = extraExpressionOptions.some((option) => option.mood === mood)
+  const labContextCount = Object.values(labContext).filter((value) => value.trim()).length
+
+  const chooseLabShortcut = (prompt: string) => {
+    setChatInput(prompt)
+    window.requestAnimationFrame(() => chatInputRef.current?.focus())
+  }
+
+  const updateLabContext = (field: keyof LabContext, value: string) => {
+    setLabContext((current) => ({ ...current, [field]: value.slice(0, 120) }))
+  }
 
   const handleSuggestionAction = () => {
     if (suggestionIndex === 0) {
@@ -1011,6 +1053,38 @@ function App() {
               onClick={() => { chatAbort.current?.abort(); setChatLoading(false); setChatOpen(false) }}
             >×</button>
           </div>
+          <div className="lab-tools" aria-label="Modo Bancada">
+            <div className="lab-tools-heading">
+              <span>ATALHOS TÉCNICOS</span>
+              <button
+                type="button"
+                className={labContextOpen ? 'lab-context-trigger lab-context-trigger--open' : 'lab-context-trigger'}
+                aria-expanded={labContextOpen}
+                aria-controls="lab-context-form"
+                onClick={() => setLabContextOpen((value) => !value)}
+              >
+                Contexto{labContextCount ? ` · ${labContextCount}` : ''}
+              </button>
+            </div>
+            {labContextOpen ? (
+              <div className="lab-context" id="lab-context-form">
+                <label>Objetivo<input value={labContext.objective} onChange={(event) => updateLabContext('objective', event.target.value)} placeholder="Ex.: controlar temperatura" /></label>
+                <label>Plataforma<input value={labContext.platform} onChange={(event) => updateLabContext('platform', event.target.value)} placeholder="Ex.: ESP32-S3" /></label>
+                <label>Alimentação<input value={labContext.power} onChange={(event) => updateLabContext('power', event.target.value)} placeholder="Ex.: 12 V e 3,3 V" /></label>
+                <label>Instrumentos<input value={labContext.instruments} onChange={(event) => updateLabContext('instruments', event.target.value)} placeholder="Ex.: multímetro e osciloscópio" /></label>
+                <div className="lab-context-footer">
+                  <small>Fica somente nesta aba.</small>
+                  {labContextCount > 0 && <button type="button" onClick={() => setLabContext(emptyLabContext)}>Limpar</button>}
+                </div>
+              </div>
+            ) : (
+              <div className="lab-shortcuts" role="group" aria-label="Iniciar tarefa técnica">
+                {labShortcuts.map((shortcut) => (
+                  <button type="button" key={shortcut.label} onClick={() => chooseLabShortcut(shortcut.prompt)}>{shortcut.label}</button>
+                ))}
+              </div>
+            )}
+          </div>
           <div className="chat-log" role="log" aria-live="polite" ref={chatLog}>
             {chatMessages.map((message, index) => (
               <p className={`chat-bubble chat-bubble--${message.role}`} key={`${message.role}-${index}`}>
@@ -1023,6 +1097,7 @@ function App() {
           {chatError && <p className="chat-error" role="alert">{chatError}</p>}
           <form className="chat-composer" onSubmit={(event) => { event.preventDefault(); void sendChatMessage() }}>
             <textarea
+              ref={chatInputRef}
               value={chatInput}
               onChange={(event) => setChatInput(event.target.value.slice(0, 500))}
               onKeyDown={(event) => {
@@ -1039,7 +1114,7 @@ function App() {
             />
             <button type="submit" disabled={chatLoading || !chatInput.trim()} aria-label="Enviar mensagem">↑</button>
           </form>
-          <small className="chat-privacy">Sem memória persistente · mensagens processadas pela OpenAI</small>
+          <small className="chat-privacy">{labContextCount ? 'Contexto temporário nesta aba' : 'Sem memória persistente'} · mensagens processadas pela OpenAI</small>
         </section>
       )}
 

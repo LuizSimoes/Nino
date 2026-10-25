@@ -1803,8 +1803,65 @@ footer { display: none; }
   border-radius: 50%; color: #bbb9d1; background: rgba(255,255,255,.04); font-size: 16px; cursor: pointer;
 }
 
+.lab-tools {
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid rgba(126,228,216,.14);
+  border-radius: 12px;
+  background: rgba(8,11,25,.28);
+}
+.lab-tools-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.lab-tools-heading > span { color: #86eadf; font: 750 8px/1.1 system-ui, sans-serif; letter-spacing: .1em; }
+.lab-context-trigger {
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid rgba(170,164,255,.2);
+  border-radius: 999px;
+  color: #bbb9d1;
+  background: rgba(170,164,255,.06);
+  font: 650 9px/1 system-ui, sans-serif;
+  cursor: pointer;
+}
+.lab-context-trigger--open { color: #17192d; background: linear-gradient(135deg, #91eee3, #aaa4ff); }
+.lab-shortcuts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+.lab-shortcuts button {
+  min-width: 0;
+  min-height: 30px;
+  padding: 5px 7px;
+  overflow: hidden;
+  border: 1px solid rgba(170,164,255,.16);
+  border-radius: 8px;
+  color: #d9d6e9;
+  background: rgba(255,255,255,.035);
+  font: 620 9px/1.15 system-ui, sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.lab-shortcuts button:hover { border-color: rgba(126,228,216,.36); background: rgba(126,228,216,.08); }
+.lab-context { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.lab-context label { min-width: 0; display: grid; gap: 3px; color: #aaa9c2; font: 650 8px/1.1 system-ui, sans-serif; }
+.lab-context input {
+  width: 100%;
+  min-width: 0;
+  height: 31px;
+  padding: 0 8px;
+  border: 1px solid rgba(170,164,255,.18);
+  border-radius: 8px;
+  outline: 0;
+  color: #f2effb;
+  background: rgba(8,11,25,.58);
+  font: 500 9px/1.2 system-ui, sans-serif;
+}
+.lab-context input:focus { border-color: rgba(126,228,216,.6); box-shadow: 0 0 0 2px rgba(126,228,216,.07); }
+.lab-context input::placeholder { color: #6f6d83; }
+.lab-context-footer { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.lab-context-footer small { color: #7f7d93; font: 500 8px/1.2 system-ui, sans-serif; }
+.lab-context-footer button { padding: 2px 0; border: 0; color: #9beee5; background: transparent; font: 650 8px/1.2 system-ui, sans-serif; cursor: pointer; }
+
 .chat-log {
-  min-height: 130px;
+  min-height: 80px;
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -1906,6 +1963,10 @@ footer { display: none; }
 .app-shell--chat-open .chat-privacy { font-size: 8.5px; }
 .app-shell--chat-open .nino-caption { font-size: 9px; }
 .app-shell--chat-open .expression-button { font-size: 9px; }
+.app-shell--chat-open .lab-tools-heading > span { font-size: 8px; }
+.app-shell--chat-open .lab-shortcuts button,
+.app-shell--chat-open .lab-context-trigger,
+.app-shell--chat-open .lab-context input { font-size: 10px; }
 
 /* O palpite ocupa o painel reservado a controles, sem cobrir Nino ou expressões. */
 .control-panel--suggestion { padding: 9px; }

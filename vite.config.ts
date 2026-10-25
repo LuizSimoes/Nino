@@ -48,8 +48,8 @@ function realtimeVoicePlugin(apiKey: string): Plugin {
       }
 
       try {
-        const body = JSON.parse(await readRequestBody(voiceRequest, 20_000)) as { message?: unknown; history?: unknown }
-        const conversation = sanitizeConversation(body.message, body.history)
+        const body = JSON.parse(await readRequestBody(voiceRequest, 20_000)) as { message?: unknown; history?: unknown; context?: unknown }
+        const conversation = sanitizeConversation(body.message, body.history, body.context)
         if (!conversation.message || conversation.message.length > 500) {
           response.statusCode = 400
           response.end(JSON.stringify({ error: 'Escreva uma mensagem de até 500 caracteres.' }))

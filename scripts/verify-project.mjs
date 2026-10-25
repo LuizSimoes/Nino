@@ -19,6 +19,8 @@ const voice = read('src/realtimeVoice.ts')
 const api = read('api/realtime-session.js')
 const chatApi = read('api/nino-chat.js')
 const chatCore = read('server/nino-chat-core.js')
+const chatClient = read('src/ninoChat.ts')
+const viteConfig = read('vite.config.ts')
 const ninoFace = app.slice(app.indexOf('function NinoFace('), app.indexOf('function App()'))
 
 for (const mood of moods) {
@@ -66,8 +68,19 @@ for (const requirement of [
   'store: false',
   "type: 'json_schema'",
   "mood: { type: 'string', enum: allowedMoods }",
+  'sanitizeLabContext',
+  'Contexto temporário da bancada',
 ]) {
   if (!chatCore.includes(requirement)) fail(`requisito da conversa ${requirement} ausente`)
+}
+
+for (const [source, requirement] of [
+  [app, "sessionStorage.setItem('nino-lab-context-v1'"],
+  [chatClient, 'JSON.stringify({ message, history: history.slice(-8), context })'],
+  [chatApi, 'sanitizeConversation(payload?.message, payload?.history, payload?.context)'],
+  [viteConfig, 'sanitizeConversation(body.message, body.history, body.context)'],
+]) {
+  if (!source.includes(requirement)) fail(`encadeamento do contexto ausente: ${requirement}`)
 }
 
 const tracked = execFileSync('git', ['ls-files'], { cwd: root, encoding: 'utf8' })
