@@ -1417,8 +1417,6 @@ footer { display: none; }
 .dog-tongue { fill: #f37d86; stroke: #a44154 !important; stroke-width: 2 !important; }
 .dog-mouth-line { fill: none; stroke: #4a2525; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
 .dog-speaking-mouth {
-  transform-box: fill-box;
-  transform-origin: 50% 20%;
   will-change: transform;
 }
 

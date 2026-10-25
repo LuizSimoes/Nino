@@ -484,11 +484,14 @@ function NinoFace({ mood, gaze, blinking, look, speaking, speechLevel }: {
       const fallback = 0.5 + Math.sin(performance.now() * 0.018) * 0.32
       const level = Math.max(0, Math.min(1, measured < 0 ? fallback : measured))
       const openness = 0.12 + level * 0.88
-      mouth.style.transform = `scaleY(${openness})`
+      mouth.setAttribute('transform', `translate(0 203) scale(1 ${openness}) translate(0 -203)`)
       frame = window.requestAnimationFrame(animateMouth)
     }
     frame = window.requestAnimationFrame(animateMouth)
-    return () => window.cancelAnimationFrame(frame)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      mouth.removeAttribute('transform')
+    }
   }, [speaking, speechLevel])
 
   const mouthPath = asleep ? 'M140 190Q160 184 180 190' :
