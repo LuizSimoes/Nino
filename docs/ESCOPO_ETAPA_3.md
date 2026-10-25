@@ -11,6 +11,7 @@ Transformar a conversa do Nino em uma ferramenta de trabalho para eletrônica, m
 - Contexto armazenado apenas em `sessionStorage` e enviado somente junto às perguntas da sessão.
 - Limites e saneamento independentes para cada campo antes de chegar ao modelo.
 - Interface responsiva com o Nino e as expressões sempre visíveis acima da conversa.
+- Anexo PDF de até 2 MB no botão unificado, com consulta por perguntas, orientação de referências por página e erros de leitura/tamanho.
 
 ## Critérios de validação
 
@@ -24,4 +25,4 @@ Transformar a conversa do Nino em uma ferramenta de trabalho para eletrônica, m
 
 - Casos de teste técnicos automatizados para respostas, segurança e continuidade.
 - Ampliar os casos de análise de esquemas: o usuário confirmou a análise de uma imagem; testes locais de formato e limites aprovados.
-- Leitura assistida de documentação de componentes. Anexos de código/texto implementados no botão único; seleção automatizada no navegador bloqueada pela política de upload, aguardando confirmação manual do usuário.
+- Validar a consulta a um datasheet PDF real e as páginas citadas. Leitura documental implementada; testes locais de transporte aprovados. O upload automatizado permanece bloqueado pela política do navegador.

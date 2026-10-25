@@ -48,8 +48,8 @@ function realtimeVoicePlugin(apiKey: string): Plugin {
       }
 
       try {
-        const body = JSON.parse(await readRequestBody(voiceRequest, NINO_CHAT_MAX_BODY_BYTES)) as { message?: unknown; history?: unknown; context?: unknown; image?: unknown; code?: unknown }
-        const conversation = sanitizeConversation(body.message, body.history, body.context, body.image, body.code)
+        const body = JSON.parse(await readRequestBody(voiceRequest, NINO_CHAT_MAX_BODY_BYTES)) as { message?: unknown; history?: unknown; context?: unknown; image?: unknown; code?: unknown; pdf?: unknown }
+        const conversation = sanitizeConversation(body.message, body.history, body.context, body.image, body.code, body.pdf)
         if (!conversation.message || conversation.message.length > 4000) {
           response.statusCode = 400
           response.end(JSON.stringify({ error: 'Escreva uma mensagem de até 4000 caracteres.' }))
@@ -59,9 +59,14 @@ function realtimeVoicePlugin(apiKey: string): Plugin {
         response.statusCode = 200
         response.end(JSON.stringify(reply))
       } catch (error) {
+        if (error instanceof TypeError && ['PDF_INVALID', 'PDF_UNREADABLE'].includes(error.message)) {
+          response.statusCode = 400
+          response.end(JSON.stringify({ error: 'Não consegui ler o PDF. Use um documento completo, sem senha, ou exporte somente as páginas relevantes.' }))
+          return
+        }
         if (error instanceof TypeError && ['CODE_INVALID', 'ATTACHMENT_CONFLICT'].includes(error.message)) {
           response.statusCode = 400
-          response.end(JSON.stringify({ error: 'Anexo inválido. Use uma imagem ou código/texto UTF-8.' }))
+          response.end(JSON.stringify({ error: 'Anexo inválido. Use somente uma imagem, código/texto UTF-8 ou PDF.' }))
           return
         }
         if (error instanceof TypeError && error.message === 'IMAGE_INVALID') {
@@ -71,7 +76,7 @@ function realtimeVoicePlugin(apiKey: string): Plugin {
         }
         if (error instanceof RangeError) {
           response.statusCode = 413
-          response.end(JSON.stringify({ error: 'Anexo muito grande. Use código até 64 KB/24 mil caracteres ou uma imagem menor.' }))
+          response.end(JSON.stringify({ error: 'Anexo muito grande. Use PDF até 2 MB, código até 64 KB/24 mil caracteres ou uma imagem menor.' }))
           return
         }
         response.statusCode = 502

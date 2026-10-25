@@ -1,14 +1,24 @@
 import { prepareLabImage } from './labImage'
 
 export type CodeAttachment = { name: string; text: string }
-export type LabAttachment = { kind: 'image'; image: string; name: string } | { kind: 'code'; code: CodeAttachment; name: string }
-export const attachmentAccept = 'image/png,image/jpeg,image/webp,.ino,.c,.cpp,.h,.hpp,.py,.js,.ts,.json,.txt'
+export type PdfAttachment = { name: string; data: string }
+export type LabAttachment = { kind: 'image'; image: string; name: string } | { kind: 'code'; code: CodeAttachment; name: string } | { kind: 'pdf'; pdf: PdfAttachment; name: string; size: number }
+export const attachmentAccept = 'image/png,image/jpeg,image/webp,application/pdf,.pdf,.ino,.c,.cpp,.h,.hpp,.py,.js,.ts,.json,.txt'
 
 export async function prepareLabAttachment(file: File): Promise<LabAttachment> {
+  if (/\.pdf$/i.test(file.name) || file.type === 'application/pdf') {
+    if (!/\.pdf$/i.test(file.name) || file.name.length > 180 || /[/\\\u0000-\u001f]/.test(file.name)) throw new Error('Use um nome de arquivo PDF válido, com até 180 caracteres.')
+    if (file.size > 2 * 1024 * 1024) throw new Error('O PDF deve ter até 2 MB. Exporte somente as páginas relevantes e tente novamente.')
+    const bytes = new Uint8Array(await file.arrayBuffer())
+    if (!/^%PDF-[12]\.\d/.test(new TextDecoder().decode(bytes.subarray(0, 8))) || !new TextDecoder().decode(bytes.slice(-1024)).includes('%%EOF')) throw new Error('Este arquivo não parece ser um PDF completo. Exporte-o novamente.')
+    let binary = ''
+    for (let i = 0; i < bytes.length; i += 32768) binary += String.fromCharCode(...bytes.subarray(i, i + 32768))
+    return { kind: 'pdf', name: file.name, size: bytes.length, pdf: { name: file.name, data: `data:application/pdf;base64,${btoa(binary)}` } }
+  }
   if (/\.(png|jpe?g|webp)$/i.test(file.name) || file.type.startsWith('image/')) {
     return { kind: 'image', image: await prepareLabImage(file), name: file.name }
   }
-  if (!/\.(ino|c|cpp|h|hpp|py|js|ts|json|txt)$/i.test(file.name)) throw new Error('Formato ainda não aceito. Use uma imagem ou arquivo de código/texto.')
+  if (!/\.(ino|c|cpp|h|hpp|py|js|ts|json|txt)$/i.test(file.name)) throw new Error('Formato ainda não aceito. Use imagem, código/texto ou PDF.')
   if (file.name.length > 180 || /[/\\\u0000-\u001f]/.test(file.name)) throw new Error('Use um nome de arquivo menor, sem caracteres especiais de controle.')
   if (file.size > 64 * 1024) throw new Error('O arquivo de código deve ter até 64 KB. Separe o trecho relevante em um arquivo menor.')
   let text: string

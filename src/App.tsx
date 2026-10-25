@@ -725,6 +725,7 @@ function App() {
   const [attachment, setAttachment] = useState<LabAttachment | undefined>()
   const chatImage = attachment?.kind === 'image' ? attachment.image : undefined
   const chatCode = attachment?.kind === 'code' ? attachment.code : undefined
+  const chatPdf = attachment?.kind === 'pdf' ? attachment.pdf : undefined
   const [imagePreparing, setImagePreparing] = useState(false)
   const [labContext, setLabContext] = useState<LabContext>(storedLabContext)
   const [labContextOpen, setLabContextOpen] = useState(false)
@@ -809,7 +810,7 @@ function App() {
   }
 
   const sendChatMessage = async () => {
-    const message = chatInput.trim() || (chatImage ? 'Analise esta imagem da bancada: o que é visível e qual o próximo teste útil?' : chatCode ? 'Revise o arquivo de código anexado e identifique problemas e próximos testes.' : '')
+    const message = chatInput.trim() || (chatImage ? 'Analise esta imagem da bancada: o que é visível e qual o próximo teste útil?' : chatCode ? 'Revise o arquivo de código anexado e identifique problemas e próximos testes.' : chatPdf ? 'Identifique o documento anexado e resuma as informações técnicas úteis, citando as páginas consultadas.' : '')
     if (!message || chatLoading || imagePreparing) return
     if (message.length > 4000) {
       setChatError('A mensagem ultrapassa 4 mil caracteres. Anexe o código como arquivo para enviá-lo inteiro.')
@@ -831,7 +832,7 @@ function App() {
     chatAbort.current = controller
 
     try {
-      const answer = await askNino(message, history, labContext, controller.signal, chatImage, chatCode)
+      const answer = await askNino(message, history, labContext, controller.signal, chatImage, chatCode, chatPdf)
       const assistantMessage: NinoChatMessage = { role: 'assistant', content: answer.reply, code: answer.code }
       setChatMessages((current) => [...current, assistantMessage])
       setMood(answer.mood)
@@ -1131,7 +1132,7 @@ function App() {
           <div className="chat-image-tools">
             <label className="chat-image-picker">
               {imagePreparing ? 'Preparando…' : attachment ? 'Trocar anexo' : '+ Anexar'}
-              <input type="file" accept={attachmentAccept} aria-label="Anexar imagem ou código" disabled={chatLoading || imagePreparing} onChange={async (event) => {
+              <input type="file" accept={attachmentAccept} aria-label="Anexar imagem, código ou PDF" disabled={chatLoading || imagePreparing} onChange={async (event) => {
                 const file = event.currentTarget.files?.[0]
                 event.currentTarget.value = ''
                 if (!file) return
@@ -1142,7 +1143,7 @@ function App() {
                 finally { setImagePreparing(false) }
               }} />
             </label>
-            {attachment ? <>{chatImage && <img src={chatImage} alt="Prévia da imagem selecionada" />}<span className="chat-attachment-name" title={attachment.name}>{attachment.name}<br />{chatCode ? `${chatCode.text.length} caracteres · código` : 'Imagem'} · usado nas próximas perguntas.</span><button type="button" aria-label="Remover anexo" disabled={chatLoading} onClick={() => setAttachment(undefined)}>×</button></> : <small>Imagem ou código · um arquivo por vez</small>}
+            {attachment ? <>{chatImage && <img src={chatImage} alt="Prévia da imagem selecionada" />}<span className="chat-attachment-name" title={attachment.name}>{attachment.name}<br />{chatCode ? `${chatCode.text.length} caracteres · código` : attachment.kind === 'pdf' ? `${Math.ceil(attachment.size / 1024)} KB · PDF` : 'Imagem'} · usado nas próximas perguntas.</span><button type="button" aria-label="Remover anexo" disabled={chatLoading} onClick={() => setAttachment(undefined)}>×</button></> : <small>Imagem, código ou PDF · um por vez</small>}
           </div>
           <form className="chat-composer" onSubmit={(event) => { event.preventDefault(); void sendChatMessage() }}>
             <textarea
@@ -1159,7 +1160,7 @@ function App() {
                 }
               }}
               rows={2}
-              placeholder="Descreva o circuito, firmware ou teste…"
+              placeholder="Pergunte sobre o circuito, código ou datasheet…"
               aria-label="Mensagem para o Nino"
             />
             <button type="submit" disabled={chatLoading || imagePreparing || chatInput.length > 4000 || (!chatInput.trim() && !attachment)} aria-label="Enviar mensagem">↑</button>

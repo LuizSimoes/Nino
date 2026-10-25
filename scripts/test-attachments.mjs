@@ -18,8 +18,19 @@ await assert.rejects(prepareLabAttachment(new File([new Uint8Array(65537)], 'gra
 await assert.rejects(prepareLabAttachment(new File([new Uint8Array([255, 255])], 'invalido.ino')), /UTF-8/)
 await assert.rejects(prepareLabAttachment(new File(['\u0000binary'], 'binario.c')), /texto válido/)
 await assert.rejects(prepareLabAttachment(new File([''], 'vazio.h')), /vazio/)
-await assert.rejects(prepareLabAttachment(new File(['texto'], 'documento.pdf')), /Formato/)
+await assert.rejects(prepareLabAttachment(new File(['texto'], 'documento.docx')), /Formato/)
 console.log('Anexos: identificação por extensão, conteúdo integral, UTF-8, formatos e limites aprovados.')
+
+// Envelope sintético: valida transporte, não certifica a estrutura interna do PDF.
+const pdfEnvelope = '%PDF-1.4\n% synthetic transport fixture\n%%EOF\n'
+const preparedPdf = await prepareLabAttachment(new File([pdfEnvelope], 'teste.pdf', { type: 'application/pdf' }))
+assert.equal(preparedPdf.kind, 'pdf')
+assert.equal(preparedPdf.pdf.data, `data:application/pdf;base64,${Buffer.from(pdfEnvelope).toString('base64')}`)
+assert.equal(preparedPdf.size, Buffer.byteLength(pdfEnvelope))
+await assert.rejects(prepareLabAttachment(new File(['texto'], 'falso.pdf')), /PDF completo/)
+await assert.rejects(prepareLabAttachment(new File(['%PDF-1.4\ntruncado'], 'incompleto.pdf')), /PDF completo/)
+await assert.rejects(prepareLabAttachment(new File([new Uint8Array(2 * 1024 * 1024 + 1)], 'grande.pdf')), /2 MB/)
+console.log('PDF: identificação, envelope, conteúdo integral e limite de 2 MB aprovados.')
 
 const { responseText, conversationText } = await import(moduleUrl(await compile('../src/conversationExport.ts')))
 const answer = { role: 'assistant', content: 'Botão pressionado = LOW.\nUse debounce.', code: 'void loop() {\n  ler_botao();\n}\n' }

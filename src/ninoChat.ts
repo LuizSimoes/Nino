@@ -1,5 +1,5 @@
 export type NinoChatMood = 'presente' | 'curioso' | 'animado' | 'pensando' | 'cochilando' | 'concentrado' | 'confuso' | 'acolhedor' | 'orgulhoso'
-import type { CodeAttachment } from './labAttachment'
+import type { CodeAttachment, PdfAttachment } from './labAttachment'
 export type NinoChatMessage = { role: 'user' | 'assistant'; content: string; image?: string; code?: string; attachmentName?: string }
 export type NinoChatReply = { reply: string; mood: NinoChatMood; code?: string }
 export type NinoLabContext = { objective: string; platform: string; power: string; instruments: string }
@@ -9,11 +9,11 @@ const moods = new Set<NinoChatMood>([
   'concentrado', 'confuso', 'acolhedor', 'orgulhoso',
 ])
 
-export async function askNino(message: string, history: NinoChatMessage[], context: NinoLabContext, signal?: AbortSignal, image?: string, code?: CodeAttachment): Promise<NinoChatReply> {
+export async function askNino(message: string, history: NinoChatMessage[], context: NinoLabContext, signal?: AbortSignal, image?: string, code?: CodeAttachment, pdf?: PdfAttachment): Promise<NinoChatReply> {
   const response = await fetch('/api/nino-chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, history: history.slice(-8).map(({ role, content, code }) => ({ role, content: code ? `${content}\n\n${code}` : content })), context, image, code }),
+    body: JSON.stringify({ message, history: history.slice(-8).map(({ role, content, code }) => ({ role, content: code ? `${content}\n\n${code}` : content })), context, image, code, pdf }),
     signal,
   })
   const data = await response.json().catch(() => ({})) as Partial<NinoChatReply> & { error?: string }

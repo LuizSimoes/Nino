@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { sanitizeConversation, sanitizeLabContext, sanitizeImage, sanitizeCode, createNinoReply } from '../server/nino-chat-core.js'
+import { sanitizeConversation, sanitizeLabContext, sanitizeImage, sanitizeCode, sanitizePdf, createNinoReply } from '../server/nino-chat-core.js'
 
 // Os testes locais não usam chave nem fazem chamadas externas.
 assert.deepEqual(sanitizeLabContext(null), { objective: '', platform: '', power: '', instruments: '' })
@@ -53,6 +53,26 @@ try {
   assert.equal(result.reply, 'Removi o bloqueio.')
 } finally { globalThis.fetch = realFetch }
 console.log('Validação local: arquivo integral, limites e formatação do código aprovados.')
+
+const pdf = { name: 'teste.pdf', data: `data:application/pdf;base64,${Buffer.from('%PDF-1.4\n% synthetic transport fixture\n%%EOF\n').toString('base64')}` }
+assert.deepEqual(sanitizePdf(pdf), pdf)
+assert.throws(() => sanitizePdf({ ...pdf, name: '../teste.pdf' }), /PDF_INVALID/)
+assert.throws(() => sanitizePdf({ ...pdf, data: 'https://example.com/teste.pdf' }), /PDF_INVALID/)
+assert.throws(() => sanitizePdf({ ...pdf, data: 'data:application/pdf;base64,aGVsbG8=' }), /PDF_INVALID/)
+assert.throws(() => sanitizePdf({ ...pdf, data: 'x'.repeat(2_796_233) }), /PDF_TOO_LARGE/)
+assert.throws(() => sanitizeConversation('teste', [], {}, undefined, sourceCode, pdf), /ATTACHMENT_CONFLICT/)
+assert.throws(() => sanitizeConversation('teste', [], {}, testImage, undefined, pdf), /ATTACHMENT_CONFLICT/)
+try {
+  globalThis.fetch = async (_url, options) => {
+    const request = JSON.parse(options.body)
+    assert.equal(request.store, false)
+    assert.deepEqual(request.input.at(-1).content, [{ type: 'input_text', text: 'Consulte o PDF' }, { type: 'input_file', filename: pdf.name, file_data: pdf.data, detail: 'high' }])
+    assert.ok(request.instructions.includes('página física do PDF'))
+    return new Response(JSON.stringify({ output_text: JSON.stringify({ reply: 'Não há dados técnicos legíveis no documento.', mood: 'confuso', code: null }) }))
+  }
+  await createNinoReply({ apiKey: 'test', message: 'Consulte o PDF', history: [], pdf })
+} finally { globalThis.fetch = realFetch }
+console.log('Validação local: PDF na Responses API, referência de página e conflitos de anexo aprovados (serviço simulado).')
 
 // Opt-in explícito: exercita a rota real e pode consumir a API configurada.
 const endpoint = process.argv.find((arg) => arg.startsWith('--endpoint='))?.slice(11)

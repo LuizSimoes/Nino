@@ -106,7 +106,7 @@ export default async function ninoChat(request, response) {
 
   try {
     const payload = await readJson(request)
-    const conversation = sanitizeConversation(payload?.message, payload?.history, payload?.context, payload?.image, payload?.code)
+    const conversation = sanitizeConversation(payload?.message, payload?.history, payload?.context, payload?.image, payload?.code, payload?.pdf)
     if (!conversation.message || conversation.message.length > NINO_CHAT_MAX_MESSAGE_CHARS) {
       sendJson(response, 400, { error: 'Escreva uma mensagem de até 4000 caracteres.' })
       return
@@ -115,8 +115,12 @@ export default async function ninoChat(request, response) {
     const reply = await createNinoReply({ apiKey, ...conversation })
     sendJson(response, 200, reply)
   } catch (error) {
+    if (error instanceof TypeError && ['PDF_INVALID', 'PDF_UNREADABLE'].includes(error.message)) {
+      sendJson(response, 400, { error: 'Não consegui ler o PDF. Use um documento completo, sem senha, ou exporte somente as páginas relevantes.' })
+      return
+    }
     if (error instanceof TypeError && ['CODE_INVALID', 'ATTACHMENT_CONFLICT'].includes(error.message)) {
-      sendJson(response, 400, { error: 'Anexo inválido. Envie uma imagem ou um arquivo de código/texto UTF-8.' })
+      sendJson(response, 400, { error: 'Anexo inválido. Envie somente uma imagem, código/texto UTF-8 ou PDF.' })
       return
     }
     if (error instanceof TypeError && error.message === 'IMAGE_INVALID') {
@@ -124,7 +128,7 @@ export default async function ninoChat(request, response) {
       return
     }
     if (error instanceof RangeError) {
-      sendJson(response, 413, { error: 'Mensagem muito grande.' })
+      sendJson(response, 413, { error: error.message === 'PDF_TOO_LARGE' ? 'O PDF deve ter até 2 MB. Exporte somente as páginas relevantes.' : 'Mensagem ou anexo muito grande.' })
       return
     }
     if (error instanceof SyntaxError) {

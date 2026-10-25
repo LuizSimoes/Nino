@@ -2,6 +2,10 @@
 
 ## Próxima atualização
 
+- Botão **+ Anexar** aceita PDF de até 2 MB para consultar datasheets, com identificação e tamanho antes do envio.
+- PDF acompanha perguntas seguintes até ser removido ou substituído; instruções pedem referência de arquivo/página e distinção entre valores típicos, recomendados e limites absolutos.
+- Limites, envelope PDF e construção da entrada documental cobertos por testes locais sem transmissão externa.
+
 - Revisão de todas as caixas de interação: comparador de voz e avisos deixam de flutuar; estilos antigos da legenda e expressões extras removidos do posicionamento.
 - Respostas abertas desde o começo, com ferramentas recolhidas e botões para copiar resposta, copiar conversa e baixar texto integral.
 - Histórico da página preserva toda a sessão para revisão e exportação; código mantém indentação e quebras de linha.
