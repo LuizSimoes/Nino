@@ -2,6 +2,9 @@
 
 ## Próxima atualização
 
+- Conceito alternativo do androide e nove expressões aprovadas preservados no projeto, sem substituir o cão na interface.
+- Primeiro blockout técnico editável em Blender, com controles independentes de cabeça, pálpebras e mandíbula, renders de teste e verificação reproduzível. Acabamento realista e integração do seletor ainda pendentes.
+
 - Sessões de bancada salvas explicitamente neste navegador: conversa completa, contexto, anexos e rascunho, com reabertura, renomeação e exclusão confirmada.
 - Aviso antes de trocar de bancada com alterações não salvas; painel integrado ao fluxo, sem sobrepor o personagem. Sem sincronização ou armazenamento de sessões no servidor.
 
