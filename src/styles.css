@@ -1866,6 +1866,94 @@ footer { display: none; }
 
 @keyframes chatDot { to { opacity: .3; transform: translateY(-2px); } }
 
+/* A conversa usa a área livre ao lado do dock; o personagem permanece visível. */
+.app-shell--chat-open { overflow: visible; }
+
+.app-shell--chat-open .chat-lab {
+  top: 0;
+  right: calc(100% + 14px);
+  bottom: 0;
+  left: auto;
+  width: clamp(380px, 36vw, 520px);
+  max-height: none;
+  animation: sidePanelIn .28s cubic-bezier(.2,.78,.28,1) both;
+}
+
+.app-shell--chat-open .chat-lab-heading p { font-size: 8px; }
+.app-shell--chat-open .chat-lab-heading h2 { font-size: 17px; }
+.app-shell--chat-open .chat-bubble { font-size: 11px; }
+.app-shell--chat-open .chat-bubble strong { font-size: 9px; }
+.app-shell--chat-open .chat-composer textarea { font-size: 11px; }
+
+/* O palpite ocupa o painel reservado a controles, sem cobrir Nino ou expressões. */
+.control-panel--suggestion { padding: 9px; }
+.intuition-inline { min-width: 0; display: grid; gap: 4px; }
+.intuition-inline-head {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--phosphor);
+  font: 750 7px/1.1 system-ui, sans-serif;
+  letter-spacing: .1em;
+}
+.intuition-inline-head .spark { width: 20px; height: 20px; flex: none; border-radius: 7px; }
+.intuition-inline-head button {
+  width: 22px;
+  height: 22px;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  color: #aaa9c2;
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
+}
+.intuition-inline > p { display: none; }
+.intuition-inline h2 { margin: 1px 0 0; font-size: 12px; line-height: 1.15; overflow-wrap: anywhere; }
+.intuition-inline small {
+  min-width: 0;
+  color: #9cae9f;
+  font: 500 8px/1.25 system-ui, sans-serif;
+  overflow-wrap: anywhere;
+}
+.intuition-inline-actions { min-width: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 2px; }
+.intuition-inline-actions button {
+  min-width: 0;
+  min-height: 27px;
+  padding: 0 6px;
+  overflow: hidden;
+  border: 1px solid rgba(170,164,255,.22);
+  border-radius: 8px;
+  color: #17192d;
+  background: linear-gradient(135deg, #91eee3, #aaa4ff);
+  font: 720 8px/1.1 system-ui, sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.intuition-inline-actions button:last-child { color: #c6c3d8; background: transparent; }
+
+@keyframes sidePanelIn {
+  from { opacity: 0; transform: translateX(14px) scale(.985); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+/* Em telas estreitas, conversar vira uma tela própria do dock em vez de uma sobreposição ambígua. */
+@media (max-width: 860px) {
+  .app-shell { width: min(92vw, 420px); }
+  .app-shell--chat-open { overflow: hidden; }
+  .app-shell--chat-open .hero { visibility: hidden; pointer-events: none; }
+  .app-shell--chat-open .chat-lab {
+    top: 58px;
+    right: 8px;
+    bottom: 8px;
+    left: 8px;
+    width: auto;
+    max-height: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }

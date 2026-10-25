@@ -59,16 +59,16 @@ const chestSymbols: Record<NinoMood, string> = {
 
 const suggestions = [
   {
-    eyebrow: 'Você explorou as expressões por um tempinho.',
+    eyebrow: 'Pausa detectada nesta demonstração.',
     title: 'Quer ver o Nino cochilar?',
-    detail: 'Posso acelerar o repouso só nesta demonstração.',
+    detail: 'Posso antecipar o estado de repouso sem interromper a sessão.',
     action: 'Cochilar agora',
   },
   {
-    eyebrow: 'Percebi uma pausa tranquila por aqui.',
-    title: 'Que tal um circuito de LED depois?',
-    detail: 'É uma ideia local, sem abrir nada ou interromper você.',
-    action: 'Guardar ideia',
+    eyebrow: 'Pronto para organizar a bancada.',
+    title: 'Quer estruturar o próximo teste?',
+    detail: 'Posso separar hipótese, medições e critérios de validação.',
+    action: 'Montar roteiro',
   },
 ]
 
@@ -94,10 +94,10 @@ const voiceProfiles: Record<VoiceProfile, { label: string; detail: string; rate:
   },
 }
 
-const voiceSample = 'Oi, eu sou o Nino! Bora descobrir uma ideia juntos?'
+const voiceSample = 'Bancada pronta. Qual circuito vamos colocar à prova hoje?'
 const initialChatMessage: NinoChatMessage = {
   role: 'assistant',
-  content: 'Oi! Agora eu posso pensar com você. O que vamos descobrir?',
+  content: 'Bancada pronta. Quer revisar um circuito, depurar firmware ou transformar uma ideia em protótipo?',
 }
 
 function StatusIcon({ kind }: { kind: 'mic' | 'camera' | 'voice' | 'tune' | 'chat' }) {
@@ -906,7 +906,7 @@ function App() {
       setFeedback('Demonstração iniciada. O Nino acorda sozinho em alguns segundos.')
     } else {
       setSuggestionIndex(null)
-      setFeedback('Ideia guardada apenas durante esta sessão.')
+      setFeedback('Roteiro de teste registrado apenas durante esta sessão.')
     }
   }
 
@@ -916,7 +916,7 @@ function App() {
   }
 
   return (
-    <main className="app-shell">
+    <main className={`app-shell ${chatOpen ? 'app-shell--chat-open' : ''}`}>
       <header className="topbar">
         <a className="brand" href="#inicio" aria-label="Nino, início">
           <span className="brand-mark" aria-hidden="true">N</span>
@@ -1002,7 +1002,7 @@ function App() {
         <section className="chat-lab" role="dialog" aria-modal="true" aria-labelledby="chat-lab-title">
           <div className="chat-lab-heading">
             <div>
-              <p>CONVERSA CRIATIVA</p>
+              <p>COPILOTO DE LABORATÓRIO</p>
               <h2 id="chat-lab-title">Converse com o Nino</h2>
             </div>
             <button
@@ -1034,7 +1034,7 @@ function App() {
               maxLength={500}
               rows={2}
               autoFocus
-              placeholder="Escreva uma ideia ou pergunta…"
+              placeholder="Descreva o circuito, firmware ou teste…"
               aria-label="Mensagem para o Nino"
             />
             <button type="submit" disabled={chatLoading || !chatInput.trim()} aria-label="Enviar mensagem">↑</button>
@@ -1048,7 +1048,7 @@ function App() {
           <p className="kicker"><span /> PRESENÇA ATIVA</p>
           <h1>Olá, eu sou<br /><em>Nino.</em></h1>
           <p className="lead">
-            Seu amigão cientista, pronto para inventar, explicar e perceber quando uma ideia pode ajudar.
+            Seu copiloto de laboratório para circuitos, microcontroladores, firmware e protótipos.
           </p>
           <div className="presence-note">
             <span className="presence-dot" />
@@ -1128,42 +1128,61 @@ function App() {
           </div>
         </div>
 
-        <div className="control-panel" aria-label="Painel de demonstração">
-          <div className="panel-heading">
-            <div>
-              <p className="panel-label">INTUIÇÃO LOCAL</p>
-              <h2>Discreta por escolha.</h2>
+        <div className={`control-panel ${suggestion && intuitionOn ? 'control-panel--suggestion' : ''}`} aria-label="Painel de demonstração">
+          {suggestion && intuitionOn ? (
+            <div className="intuition-inline" aria-live="polite" aria-label="Sugestão do Nino">
+              <div className="intuition-inline-head">
+                <span className="spark">✦</span>
+                <span>PALPITE DO NINO</span>
+                <button type="button" aria-label="Fechar sugestão" onClick={dismissSuggestion}>×</button>
+              </div>
+              <p>{suggestion.eyebrow}</p>
+              <h2>{suggestion.title}</h2>
+              <small>{suggestion.detail}</small>
+              <div className="intuition-inline-actions">
+                <button type="button" onClick={handleSuggestionAction}>{suggestion.action}</button>
+                <button type="button" onClick={dismissSuggestion}>Agora não</button>
+              </div>
             </div>
-            <button
-              className={`toggle ${intuitionOn ? 'toggle--on' : ''}`}
-              type="button"
-              role="switch"
-              aria-checked={intuitionOn}
-              onClick={() => setIntuitionOn((value) => !value)}
-            >
-              <span />
-              {intuitionOn ? 'Ativa' : 'Pausada'}
-            </button>
-          </div>
+          ) : (
+            <>
+              <div className="panel-heading">
+                <div>
+                  <p className="panel-label">INTUIÇÃO LOCAL</p>
+                  <h2>Discreta por escolha.</h2>
+                </div>
+                <button
+                  className={`toggle ${intuitionOn ? 'toggle--on' : ''}`}
+                  type="button"
+                  role="switch"
+                  aria-checked={intuitionOn}
+                  onClick={() => setIntuitionOn((value) => !value)}
+                >
+                  <span />
+                  {intuitionOn ? 'Ativa' : 'Pausada'}
+                </button>
+              </div>
 
-          <p className="panel-description">
-            Nesta versão, o Nino usa somente o tempo e as ações desta tela para ensaiar sugestões. Nada sai do navegador.
-          </p>
+              <p className="panel-description">
+                Nesta versão, o Nino usa somente o tempo e as ações desta tela para ensaiar sugestões. Nada sai do navegador.
+              </p>
 
-          <div className="signal-row">
-            <span>Sinais usados agora</span>
-            <span className="local-badge">● 2 locais</span>
-          </div>
-          <div className="signal-list">
-            <span>Tempo nesta tela</span>
-            <span>Interações com o Nino</span>
-          </div>
+              <div className="signal-row">
+                <span>Sinais usados agora</span>
+                <span className="local-badge">● 2 locais</span>
+              </div>
+              <div className="signal-list">
+                <span>Tempo nesta tela</span>
+                <span>Interações com o Nino</span>
+              </div>
 
-          <div className="demo-actions">
-            <button className="primary-button" type="button" onClick={() => { setSuggestionIndex(1); wakeNino() }} disabled={!intuitionOn}>
-              <span aria-hidden="true">✦</span> Demonstrar intuição
-            </button>
-          </div>
+              <div className="demo-actions">
+                <button className="primary-button" type="button" onClick={() => { setSuggestionIndex(1); wakeNino() }} disabled={!intuitionOn}>
+                  <span aria-hidden="true">✦</span> Demonstrar intuição
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </section>
 
@@ -1181,23 +1200,6 @@ function App() {
           <div><h3>Privado por padrão</h3><p>Microfone e câmera continuam desligados nesta etapa.</p></div>
         </article>
       </section>
-
-      {suggestion && intuitionOn && (
-        <aside className="intuition-card" aria-live="polite" aria-label="Sugestão do Nino">
-          <div className="intuition-head">
-            <span className="spark">✦</span>
-            <span>PALPITE DO NINO</span>
-            <button type="button" aria-label="Fechar sugestão" onClick={dismissSuggestion}>×</button>
-          </div>
-          <p>{suggestion.eyebrow}</p>
-          <h2>{suggestion.title}</h2>
-          <small>{suggestion.detail}</small>
-          <div className="intuition-actions">
-            <button type="button" onClick={handleSuggestionAction}>{suggestion.action}</button>
-            <button type="button" onClick={dismissSuggestion}>Agora não</button>
-          </div>
-        </aside>
-      )}
 
       {feedback && (
         <div className="feedback-toast" role="status">

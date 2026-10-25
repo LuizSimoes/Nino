@@ -2,6 +2,10 @@
 
 ## Próxima atualização
 
+- Conversa reposicionada ao lado do dock em telas largas e transformada em tela dedicada no modo estreito, sem cobrir o Nino.
+- Sugestões de Intuição incorporadas ao painel inferior, sem esconder as expressões.
+- Personalidade revisada para um copiloto de laboratório adulto, técnico, proativo e espirituoso.
+- Textos de demonstração atualizados para circuitos, firmware, medições e testes de bancada.
 - Conversa criativa adicionada com personalidade própria, histórico apenas da sessão e emoção escolhida por resposta.
 - Separação formal entre o cérebro criativo e a camada de voz, que continua lendo o texto fielmente.
 - Fala literal reforçada para evitar complementos improvisados.

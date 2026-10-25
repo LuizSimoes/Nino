@@ -9,7 +9,7 @@
 - **Pingente:** funciona como expressão secundária. Usa pulso, interrogação, lâmpada, reticências, Z, alvo, interrogação invertida, coração ou estrela.
 - **Boca e fala:** a boca reage à amplitude real do áudio neural. Em pausas, a expressão de repouso reaparece; a boca falante volta com a continuação do som.
 - **Voz:** Nino cartoon é o padrão. A voz neural WebRTC é somente de saída e cai automaticamente para o sintetizador local quando necessário.
-- **Conversa:** o cérebro criativo gera texto e emoção pela Responses API; a voz permanece uma camada fiel de leitura, sem improvisar uma segunda resposta.
+- **Conversa:** o cérebro criativo gera texto e emoção pela Responses API com personalidade de copiloto adulto de laboratório; a voz permanece uma camada fiel de leitura, sem improvisar uma segunda resposta.
 - **Memória:** o histórico curto existe somente no estado do navegador, é reenviado a cada turno e não cria memória persistente do Nino.
 - **Privacidade:** não há captura de microfone ou câmera, conta, cookies, analytics, memória persistente ou armazenamento dos sinais locais.
 - **Interface:** dock lateral de até 25% da largura no desktop, limitado a 360 px; em telas estreitas usa até 300 px e não cria rolagem da página.

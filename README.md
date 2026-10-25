@@ -47,10 +47,10 @@ A rota publicada aceita somente `POST`, limita tamanho, origem e frequência bá
 - Compare as expressões **De boa**, **Curioso**, **Eureca!**, **Pensando** e **Cochilo**.
 - Abra **Mais** para testar **Concentrado**, **Confuso**, **Acolhedor** e **Orgulhoso**.
 - Passe o ponteiro perto do Nino e observe o acompanhamento sutil do olhar.
-- Use **Demonstrar intuição** para exibir uma sugestão lateral que não bloqueia a interface.
+- Use **Demonstrar intuição** para exibir uma sugestão dentro do painel reservado, sem cobrir o Nino ou as expressões.
 - Pause e reative a Intuição no controle **Ativa/Pausada**.
 - Teste a voz **Nino cartoon**, escolhida como padrão do personagem.
-- Abra **Conversar** e peça uma explicação, uma ideia ou uma invenção ao Nino.
+- Abra **Conversar** e peça ao Nino para revisar um circuito, depurar firmware ou planejar um teste de bancada.
 - Confirme que nenhuma permissão de microfone ou câmera é solicitada.
 
 ## Estado atual
@@ -61,7 +61,8 @@ A rota publicada aceita somente `POST`, limita tamanho, origem e frequência bá
 - O olhar acompanha discretamente o ponteiro pelo deslocamento das pupilas.
 - O blockout estabelece proporções, materiais, peças faciais, esqueleto, testes de fala e nove ações emocionais. Escultura, retopologia e pesos finais continuam como etapas posteriores de acabamento.
 - A voz tenta usar o modelo neural `gpt-realtime-2.1-mini` por WebRTC quando uma chave local está configurada; sem ela, usa automaticamente o sintetizador do navegador em português.
-- A conversa criativa usa a Responses API com `gpt-6-luna`: o modelo cria texto e emoção; a camada de voz apenas lê a resposta aprovada.
+- A conversa usa a Responses API com `gpt-6-luna`: o Nino atua como copiloto técnico adulto de eletrônica, microcontroladores, programação e prototipagem, enquanto a camada de voz apenas lê a resposta aprovada.
+- No desktop, a conversa se abre ao lado do dock e preserva o personagem; em telas estreitas, torna-se uma tela dedicada dentro do dock.
 - O histórico fica somente na sessão atual do navegador e as requisições usam `store: false`; não há memória persistente do Nino.
 - O comparador permite ouvir **Nino divertido**, **Nino cartoon**, **Pequeno inventor** e **Jovem aventureiro**. **Nino cartoon** é o perfil padrão: masculino, infantojuvenil, rápido, sorridente e expressivo.
 - A interface informa quando a voz é gerada por IA. O áudio é somente de saída: nenhum microfone é ligado ou solicitado.
