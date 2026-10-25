@@ -2,6 +2,8 @@
 
 ## Próxima atualização
 
+- Validação reproduzível do contexto e histórico, com quatro cenários opcionais na API real para contexto, diagnóstico, acionamento e firmware.
+
 - Modo Bancada iniciado com quatro atalhos técnicos para tarefas recorrentes.
 - Ficha temporária adicionada para objetivo, plataforma, alimentação e instrumentos disponíveis.
 - Contexto técnico enviado em cada pergunta quando relevante, sem memória permanente ou armazenamento no servidor.

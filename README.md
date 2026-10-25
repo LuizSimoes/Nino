@@ -57,6 +57,8 @@ A rota publicada aceita somente `POST`, limita tamanho, origem e frequência bá
 
 ## Estado atual
 
+Para conferir contexto e histórico sem chamadas externas, execute `npm run test:bancada`. Para exercitar quatro cenários na API publicada, execute `npm run test:bancada -- --endpoint=https://nino-phi.vercel.app/api/nino-chat`; essa opção usa o serviço configurado e pode gerar consumo. Os cenários verificam contexto, continuidade de diagnóstico, acionamento de carga e firmware sem bloqueio. A avaliação por termos detecta regressões básicas e não certifica a correção de um circuito.
+
 - A interface usa como personagem principal a ilustração vetorial dourada escolhida durante os testes. O modelo [`Nino_v6_complete.glb`](outputs/3d/Nino_v6_complete.glb) permanece preservado como base 3D para evoluções futuras.
 - Os nove botões controlam as poses corporais, as expressões faciais, o piscar com pálpebras douradas, os olhos fechados do cochilo e os símbolos do pingente na ilustração principal.
 - A boca vetorial acompanha a amplitude real do áudio neural, fecha durante pausas, retoma na frase seguinte e preserva a expressão emocional após a fala.
