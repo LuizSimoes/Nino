@@ -1,5 +1,7 @@
 import { defineConfig, loadEnv, type Connect, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
+// @ts-expect-error Módulo JavaScript compartilhado com a função serverless.
+import { createNinoReply, sanitizeConversation } from './server/nino-chat-core.js'
 
 const runtime = globalThis as unknown as {
   process?: { env?: Record<string, string | undefined> }
@@ -18,13 +20,13 @@ type VoiceRequest = {
   on: (event: 'data' | 'end' | 'error', listener: (value?: string | Error) => void) => void
 }
 
-function readRequestBody(request: VoiceRequest) {
+function readRequestBody(request: VoiceRequest, maxLength = 1_000_000) {
   return new Promise<string>((resolve, reject) => {
     let body = ''
     request.setEncoding('utf8')
     request.on('data', (chunk) => {
       body += typeof chunk === 'string' ? chunk : ''
-      if (body.length > 1_000_000) reject(new Error('Oferta de áudio muito grande.'))
+      if (body.length > maxLength) reject(new Error('Corpo da requisição muito grande.'))
     })
     request.on('end', () => resolve(body))
     request.on('error', (error) => reject(error))
@@ -34,7 +36,36 @@ function readRequestBody(request: VoiceRequest) {
 function realtimeVoicePlugin(apiKey: string): Plugin {
   const middleware: Connect.NextHandleFunction = async (request, response, next) => {
     const voiceRequest = request as unknown as VoiceRequest
-    if (voiceRequest.method !== 'POST' || voiceRequest.url?.split('?')[0] !== '/api/realtime-session') {
+    const path = voiceRequest.url?.split('?')[0]
+
+    if (voiceRequest.method === 'POST' && path === '/api/nino-chat') {
+      response.setHeader('Cache-Control', 'no-store')
+      response.setHeader('Content-Type', 'application/json; charset=utf-8')
+      if (!apiKey) {
+        response.statusCode = 503
+        response.end(JSON.stringify({ error: 'A conversa criativa ainda não está configurada.' }))
+        return
+      }
+
+      try {
+        const body = JSON.parse(await readRequestBody(voiceRequest, 20_000)) as { message?: unknown; history?: unknown }
+        const conversation = sanitizeConversation(body.message, body.history)
+        if (!conversation.message || conversation.message.length > 500) {
+          response.statusCode = 400
+          response.end(JSON.stringify({ error: 'Escreva uma mensagem de até 500 caracteres.' }))
+          return
+        }
+        const reply = await createNinoReply({ apiKey, ...conversation, safetyIdentifier: 'nino-local-prototype' })
+        response.statusCode = 200
+        response.end(JSON.stringify(reply))
+      } catch {
+        response.statusCode = 502
+        response.end(JSON.stringify({ error: 'O Nino não conseguiu pensar agora. Tente novamente.' }))
+      }
+      return
+    }
+
+    if (voiceRequest.method !== 'POST' || path !== '/api/realtime-session') {
       next()
       return
     }

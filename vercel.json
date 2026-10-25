@@ -4,6 +4,9 @@
   "functions": {
     "api/realtime-session.js": {
       "maxDuration": 25
+    },
+    "api/nino-chat.js": {
+      "maxDuration": 30
     }
   },
   "headers": [

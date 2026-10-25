@@ -2,6 +2,8 @@
 
 ## Próxima atualização
 
+- Conversa criativa adicionada com personalidade própria, histórico apenas da sessão e emoção escolhida por resposta.
+- Separação formal entre o cérebro criativo e a camada de voz, que continua lendo o texto fielmente.
 - Fala literal reforçada para evitar complementos improvisados.
 - Sincronização da boca preservada em falas longas até o áudio terminar de fato.
 - Novos símbolos ambientais para Curioso, Concentrado, Confuso, Acolhedor e Orgulhoso.

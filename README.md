@@ -1,6 +1,6 @@
 # Nino v0.1 — Primeiro Contato
 
-Protótipo do Nino: um personagem canino com aparência 3D inspirado na memória afetiva de um mestiço de Golden Retriever. A experiência apresenta nove estados emocionais, olhar responsivo, microcomportamentos de repouso, pingente expressivo, voz opcional e uma demonstração controlável de Intuição local.
+Protótipo do Nino: um personagem canino com aparência 3D inspirado na memória afetiva de um mestiço de Golden Retriever. A experiência apresenta nove estados emocionais, olhar responsivo, microcomportamentos de repouso, pingente expressivo, conversa criativa, voz opcional e uma demonstração controlável de Intuição local.
 
 ## Executar no macOS
 
@@ -32,7 +32,7 @@ A chave permanece no servidor local e nunca é incluída no código enviado ao n
 
 ## Publicar na Vercel
 
-O projeto inclui uma função segura em `api/realtime-session.js`. Ela recebe apenas a oferta WebRTC, usa a chave no servidor e devolve a resposta SDP; a chave padrão nunca chega ao navegador.
+O projeto inclui funções seguras para voz e conversa. `api/realtime-session.js` recebe apenas a oferta WebRTC e devolve a resposta SDP; `api/nino-chat.js` recebe a mensagem e um histórico curto da sessão. A chave nunca chega ao navegador.
 
 1. Importe o repositório do GitHub na Vercel e mantenha o framework **Vite**.
 2. Em **Settings → Environment Variables**, crie `OPENAI_API_KEY` com a chave do projeto.
@@ -50,6 +50,7 @@ A rota publicada aceita somente `POST`, limita tamanho, origem e frequência bá
 - Use **Demonstrar intuição** para exibir uma sugestão lateral que não bloqueia a interface.
 - Pause e reative a Intuição no controle **Ativa/Pausada**.
 - Teste a voz **Nino cartoon**, escolhida como padrão do personagem.
+- Abra **Conversar** e peça uma explicação, uma ideia ou uma invenção ao Nino.
 - Confirme que nenhuma permissão de microfone ou câmera é solicitada.
 
 ## Estado atual
@@ -60,9 +61,11 @@ A rota publicada aceita somente `POST`, limita tamanho, origem e frequência bá
 - O olhar acompanha discretamente o ponteiro pelo deslocamento das pupilas.
 - O blockout estabelece proporções, materiais, peças faciais, esqueleto, testes de fala e nove ações emocionais. Escultura, retopologia e pesos finais continuam como etapas posteriores de acabamento.
 - A voz tenta usar o modelo neural `gpt-realtime-2.1-mini` por WebRTC quando uma chave local está configurada; sem ela, usa automaticamente o sintetizador do navegador em português.
+- A conversa criativa usa a Responses API com `gpt-6-luna`: o modelo cria texto e emoção; a camada de voz apenas lê a resposta aprovada.
+- O histórico fica somente na sessão atual do navegador e as requisições usam `store: false`; não há memória persistente do Nino.
 - O comparador permite ouvir **Nino divertido**, **Nino cartoon**, **Pequeno inventor** e **Jovem aventureiro**. **Nino cartoon** é o perfil padrão: masculino, infantojuvenil, rápido, sorridente e expressivo.
 - A interface informa quando a voz é gerada por IA. O áudio é somente de saída: nenhum microfone é ligado ou solicitado.
-- Não há conta, memória persistente ou acesso a sensores. A integração externa de voz só é ativada pela configuração local explícita.
+- Não há conta, memória persistente ou acesso a sensores. As integrações externas de conversa e voz só são ativadas pela configuração explícita da chave.
 - A “Intuição” considera apenas tempo e ações dentro da página e não persiste dados.
 - Nenhuma permissão de microfone ou câmera é solicitada.
 
@@ -77,12 +80,13 @@ git status --ignored --short
 
 Confirme que `.env.local` aparece apenas como ignorado (`!!`) e nunca como arquivo versionado. Se uma chave for publicada acidentalmente, revogue-a imediatamente no painel da OpenAI e crie outra.
 
-Consulte [`docs/ESCOPO_ETAPA_1.md`](docs/ESCOPO_ETAPA_1.md) para os critérios de aceite e [`docs/DECISOES_E_LACUNAS.md`](docs/DECISOES_E_LACUNAS.md) para decisões reversíveis e artefatos ausentes.
+Consulte [`docs/ESCOPO_ETAPA_1.md`](docs/ESCOPO_ETAPA_1.md), [`docs/ESCOPO_ETAPA_2.md`](docs/ESCOPO_ETAPA_2.md) e [`docs/DECISOES_E_LACUNAS.md`](docs/DECISOES_E_LACUNAS.md).
 
 ## Estrutura para versionamento
 
 - `src/`: aplicação React, ilustração vetorial principal, integração de voz e carregador Three.js preservado para a futura evolução do modelo.
 - `api/realtime-session.js`: backend serverless da voz neural para publicação na Vercel.
+- `api/nino-chat.js` e `server/nino-chat-core.js`: conversa criativa, validação e personalidade do Nino.
 - `public/models/nino-v6.glb`: cópia do modelo atual servida pelo aplicativo.
 - `docs/`: escopo, decisões e lacunas.
 - `outputs/`: relatório e pacote visual/técnico do Nino v1.

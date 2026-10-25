@@ -17,6 +17,8 @@ const moods = [
 const app = read('src/App.tsx')
 const voice = read('src/realtimeVoice.ts')
 const api = read('api/realtime-session.js')
+const chatApi = read('api/nino-chat.js')
+const chatCore = read('server/nino-chat-core.js')
 const ninoFace = app.slice(app.indexOf('function NinoFace('), app.indexOf('function App()'))
 
 for (const mood of moods) {
@@ -48,6 +50,26 @@ for (const safeguard of [
   if (!api.includes(safeguard)) fail(`proteção da API ${safeguard} ausente`)
 }
 
+for (const safeguard of [
+  'OPENAI_API_KEY',
+  'NINO_ALLOWED_ORIGIN',
+  'Cache-Control',
+  'no-store',
+  'RATE_LIMIT_REQUESTS',
+  'MAX_BODY_BYTES',
+]) {
+  if (!chatApi.includes(safeguard)) fail(`proteção da conversa ${safeguard} ausente`)
+}
+
+for (const requirement of [
+  "NINO_CHAT_MODEL = 'gpt-6-luna'",
+  'store: false',
+  "type: 'json_schema'",
+  "mood: { type: 'string', enum: allowedMoods }",
+]) {
+  if (!chatCore.includes(requirement)) fail(`requisito da conversa ${requirement} ausente`)
+}
+
 const tracked = execFileSync('git', ['ls-files'], { cwd: root, encoding: 'utf8' })
   .trim()
   .split('\n')
@@ -63,5 +85,5 @@ for (const path of tracked) {
 }
 
 if (!process.exitCode) {
-  console.log('Verificação do Nino concluída: 9 expressões, voz, API e segredos conferidos.')
+  console.log('Verificação do Nino concluída: 9 expressões, conversa, voz, APIs e segredos conferidos.')
 }

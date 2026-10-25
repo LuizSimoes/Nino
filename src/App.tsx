@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { NinoRealtimeVoice } from './realtimeVoice'
+import { askNino, type NinoChatMessage } from './ninoChat'
 
 type NinoMood = 'presente' | 'curioso' | 'animado' | 'pensando' | 'cochilando' | 'concentrado' | 'confuso' | 'acolhedor' | 'orgulhoso'
 type Gaze = 'esquerda' | 'centro' | 'direita'
@@ -94,8 +95,12 @@ const voiceProfiles: Record<VoiceProfile, { label: string; detail: string; rate:
 }
 
 const voiceSample = 'Oi, eu sou o Nino! Bora descobrir uma ideia juntos?'
+const initialChatMessage: NinoChatMessage = {
+  role: 'assistant',
+  content: 'Oi! Agora eu posso pensar com você. O que vamos descobrir?',
+}
 
-function StatusIcon({ kind }: { kind: 'mic' | 'camera' | 'voice' | 'tune' }) {
+function StatusIcon({ kind }: { kind: 'mic' | 'camera' | 'voice' | 'tune' | 'chat' }) {
   return kind === 'mic' ? (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M9 9.5V6a3 3 0 0 1 6 0v3.5M5 10v1a7 7 0 0 0 11.6 5.3M12 18v3M9 21h6M3 3l18 18" />
@@ -107,6 +112,10 @@ function StatusIcon({ kind }: { kind: 'mic' | 'camera' | 'voice' | 'tune' }) {
   ) : kind === 'voice' ? (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M5 10h3l4-4v12l-4-4H5zM16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11" />
+    </svg>
+  ) : kind === 'chat' ? (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" />
     </svg>
   ) : (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -672,6 +681,12 @@ function App() {
   const [voiceOn, setVoiceOn] = useState(true)
   const [voiceProfile, setVoiceProfile] = useState<VoiceProfile>('cartoon')
   const [voiceLabOpen, setVoiceLabOpen] = useState(false)
+  const [chatOpen, setChatOpen] = useState(false)
+  const [chatMessages, setChatMessages] = useState<NinoChatMessage[]>([initialChatMessage])
+  const [chatInput, setChatInput] = useState('')
+  const [chatLoading, setChatLoading] = useState(false)
+  const [chatError, setChatError] = useState<string | null>(null)
+  const [conversationCaption, setConversationCaption] = useState<string | null>(null)
   const [voiceEngine, setVoiceEngine] = useState<VoiceEngine>('local')
   const [speaking, setSpeaking] = useState(false)
   const activityTimer = useRef<number | null>(null)
@@ -679,6 +694,8 @@ function App() {
   const speechToken = useRef(0)
   const speechLevel = useRef(-1)
   const neuralVoice = useRef<NinoRealtimeVoice | null>(null)
+  const chatAbort = useRef<AbortController | null>(null)
+  const chatLog = useRef<HTMLDivElement | null>(null)
 
   const playSpeech = useCallback((text: string, profile: VoiceProfile, nextMood: NinoMood = 'presente') => {
     const token = speechToken.current + 1
@@ -748,7 +765,45 @@ function App() {
     playSpeech(voiceSample, profile)
   }
 
+  const sendChatMessage = async () => {
+    const message = chatInput.trim()
+    if (!message || chatLoading) return
+
+    const history = chatMessages.slice(-8)
+    const userMessage: NinoChatMessage = { role: 'user', content: message }
+    setChatMessages((current) => [...current, userMessage].slice(-10))
+    setChatInput('')
+    setChatError(null)
+    setChatLoading(true)
+    setMood('pensando')
+    setConversationCaption('Hmm… deixa eu pensar nisso.')
+    if (activityTimer.current) window.clearTimeout(activityTimer.current)
+
+    chatAbort.current?.abort()
+    const controller = new AbortController()
+    chatAbort.current = controller
+
+    try {
+      const answer = await askNino(message, history, controller.signal)
+      const assistantMessage: NinoChatMessage = { role: 'assistant', content: answer.reply }
+      setChatMessages((current) => [...current, assistantMessage].slice(-10))
+      setMood(answer.mood)
+      setGaze(answer.mood === 'pensando' ? 'direita' : 'centro')
+      setConversationCaption(answer.reply)
+      if (voiceOn) playSpeech(answer.reply, voiceProfile, answer.mood)
+    } catch (error) {
+      if (controller.signal.aborted) return
+      setMood('confuso')
+      setConversationCaption('Ops… minha ideia tropeçou no caminho.')
+      setChatError(error instanceof Error ? error.message : 'Não consegui responder agora.')
+    } finally {
+      if (chatAbort.current === controller) chatAbort.current = null
+      setChatLoading(false)
+    }
+  }
+
   const wakeNino = useCallback(() => {
+    setConversationCaption(null)
     setMood('curioso')
     speakMood('curioso')
     if (activityTimer.current) window.clearTimeout(activityTimer.current)
@@ -756,6 +811,7 @@ function App() {
   }, [speakMood])
 
   const napNow = useCallback(() => {
+    setConversationCaption(null)
     setMood('cochilando')
     setSuggestionIndex(null)
     if (activityTimer.current) window.clearTimeout(activityTimer.current)
@@ -763,6 +819,7 @@ function App() {
   }, [])
 
   const showExpression = useCallback((nextMood: NinoMood) => {
+    setConversationCaption(null)
     speakMood(nextMood)
     if (nextMood === 'cochilando') {
       napNow()
@@ -800,7 +857,7 @@ function App() {
   }, [mood])
 
   useEffect(() => {
-    if (!intuitionOn) {
+    if (!intuitionOn || chatOpen) {
       setSuggestionIndex(null)
       return
     }
@@ -808,7 +865,7 @@ function App() {
     return () => {
       if (suggestionTimer.current) window.clearTimeout(suggestionTimer.current)
     }
-  }, [intuitionOn])
+  }, [chatOpen, intuitionOn])
 
   useEffect(() => {
     if (!feedback) return
@@ -816,9 +873,15 @@ function App() {
     return () => window.clearTimeout(feedbackTimer)
   }, [feedback])
 
+  useEffect(() => {
+    if (!chatOpen || !chatLog.current) return
+    chatLog.current.scrollTop = chatLog.current.scrollHeight
+  }, [chatMessages, chatLoading, chatOpen])
+
   useEffect(() => () => {
     if (activityTimer.current) window.clearTimeout(activityTimer.current)
     speechToken.current += 1
+    chatAbort.current?.abort()
     neuralVoice.current?.close()
     if ('speechSynthesis' in window) window.speechSynthesis.cancel()
   }, [])
@@ -886,6 +949,16 @@ function App() {
             <StatusIcon kind="tune" />
             Comparar vozes
           </button>
+          <button
+            className="voice-toggle chat-trigger"
+            type="button"
+            aria-label="Conversar com o Nino"
+            title="Conversar com o Nino"
+            onClick={() => { setVoiceLabOpen(false); setSuggestionIndex(null); setChatOpen(true) }}
+          >
+            <StatusIcon kind="chat" />
+            Conversar
+          </button>
         </div>
       </header>
 
@@ -922,6 +995,51 @@ function App() {
             {voiceEngine === 'conectando' && 'Preparando a voz neural…'}
             {voiceEngine === 'local' && 'Prévia local · configure a voz neural para ouvir a versão natural'}
           </small>
+        </section>
+      )}
+
+      {chatOpen && (
+        <section className="chat-lab" role="dialog" aria-modal="true" aria-labelledby="chat-lab-title">
+          <div className="chat-lab-heading">
+            <div>
+              <p>CONVERSA CRIATIVA</p>
+              <h2 id="chat-lab-title">Converse com o Nino</h2>
+            </div>
+            <button
+              type="button"
+              aria-label="Fechar conversa"
+              onClick={() => { chatAbort.current?.abort(); setChatLoading(false); setChatOpen(false) }}
+            >×</button>
+          </div>
+          <div className="chat-log" role="log" aria-live="polite" ref={chatLog}>
+            {chatMessages.map((message, index) => (
+              <p className={`chat-bubble chat-bubble--${message.role}`} key={`${message.role}-${index}`}>
+                <strong>{message.role === 'assistant' ? 'Nino' : 'Você'}</strong>
+                <span>{message.content}</span>
+              </p>
+            ))}
+            {chatLoading && <p className="chat-thinking"><span /><span /><span /> Pensando…</p>}
+          </div>
+          {chatError && <p className="chat-error" role="alert">{chatError}</p>}
+          <form className="chat-composer" onSubmit={(event) => { event.preventDefault(); void sendChatMessage() }}>
+            <textarea
+              value={chatInput}
+              onChange={(event) => setChatInput(event.target.value.slice(0, 500))}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                  event.preventDefault()
+                  void sendChatMessage()
+                }
+              }}
+              maxLength={500}
+              rows={2}
+              autoFocus
+              placeholder="Escreva uma ideia ou pergunta…"
+              aria-label="Mensagem para o Nino"
+            />
+            <button type="submit" disabled={chatLoading || !chatInput.trim()} aria-label="Enviar mensagem">↑</button>
+          </form>
+          <small className="chat-privacy">Sem memória persistente · mensagens processadas pela OpenAI</small>
         </section>
       )}
 
@@ -966,7 +1084,7 @@ function App() {
           </div>
           <div className={moreOpen ? 'nino-caption nino-caption--raised' : 'nino-caption'}>
             <span className="caption-indicator" />
-            <span className="caption-text">{moodCaptions[mood]}</span>
+            <span className="caption-text">{conversationCaption ?? moodCaptions[mood]}</span>
           </div>
           {moreOpen && (
             <div className="expression-more" id="mais-expressoes" role="group" aria-label="Mais expressões do Nino">

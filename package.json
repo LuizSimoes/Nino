@@ -10,7 +10,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "check": "tsc -b && node --check api/realtime-session.js",
+    "check": "tsc -b && node --check api/realtime-session.js && node --check api/nino-chat.js && node --check server/nino-chat-core.js",
     "verify": "npm run build && node scripts/verify-project.mjs"
   },
   "dependencies": {

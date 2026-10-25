@@ -9,6 +9,8 @@
 - **Pingente:** funciona como expressão secundária. Usa pulso, interrogação, lâmpada, reticências, Z, alvo, interrogação invertida, coração ou estrela.
 - **Boca e fala:** a boca reage à amplitude real do áudio neural. Em pausas, a expressão de repouso reaparece; a boca falante volta com a continuação do som.
 - **Voz:** Nino cartoon é o padrão. A voz neural WebRTC é somente de saída e cai automaticamente para o sintetizador local quando necessário.
+- **Conversa:** o cérebro criativo gera texto e emoção pela Responses API; a voz permanece uma camada fiel de leitura, sem improvisar uma segunda resposta.
+- **Memória:** o histórico curto existe somente no estado do navegador, é reenviado a cada turno e não cria memória persistente do Nino.
 - **Privacidade:** não há captura de microfone ou câmera, conta, cookies, analytics, memória persistente ou armazenamento dos sinais locais.
 - **Interface:** dock lateral de até 25% da largura no desktop, limitado a 360 px; em telas estreitas usa até 300 px e não cria rolagem da página.
 - **Intuição:** usa somente tempo e ações da sessão atual para simular sugestões locais, sempre dispensáveis e pausáveis.
@@ -24,12 +26,13 @@
 
 - A chave da OpenAI fica apenas em `.env.local` no desenvolvimento e em `OPENAI_API_KEY` na Vercel.
 - A função `api/realtime-session.js` aceita somente `POST`, limita origem, tamanho e frequência básica e nunca devolve a chave ao navegador.
+- A função `api/nino-chat.js` também aceita somente `POST`, limita origem, tamanho e frequência, valida o histórico e usa saída estruturada.
 - `NINO_ALLOWED_ORIGIN` restringe a origem publicada a `https://nino-phi.vercel.app`.
 - Para tráfego público relevante, ainda será necessário acrescentar autenticação e limitação persistente no provedor.
 
 ## Lacunas e próximos passos
 
-- Fazer uma rodada curta de teste com usuários para calibrar voz, tempo do cochilo e percepção da Intuição.
+- Fazer uma rodada curta de teste da conversa para calibrar personalidade, concisão, emoções e continuidade.
 - Decidir se o próximo marco evolui a ilustração vetorial ou retoma o modelo Blender para rig, retopologia e acabamento final.
 - Adicionar testes automatizados do protocolo WebRTC quando houver infraestrutura de testes no projeto.
 - Reconciliar eventuais especificações externas antigas caso sejam recuperadas, preservando as decisões aprovadas durante esta sessão.
