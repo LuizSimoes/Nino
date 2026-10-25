@@ -449,6 +449,7 @@ function NinoFace({ mood, gaze, blinking, look, speaking, speechLevel }: {
   speechLevel: { current: number }
 }) {
   const speakingMouthRef = useRef<SVGGElement>(null)
+  const restingMouthRef = useRef<SVGGElement>(null)
   const asleep = mood === 'cochilando'
   const curious = mood === 'curioso'
   const animated = mood === 'animado'
@@ -476,21 +477,27 @@ function NinoFace({ mood, gaze, blinking, look, speaking, speechLevel }: {
 
   useEffect(() => {
     const mouth = speakingMouthRef.current
-    if (!speaking || !mouth) return
+    const restingMouth = restingMouthRef.current
+    if (!speaking || !mouth || !restingMouth) return
 
     let frame = 0
     const animateMouth = () => {
       const measured = speechLevel.current
       const fallback = 0.5 + Math.sin(performance.now() * 0.018) * 0.32
       const level = Math.max(0, Math.min(1, measured < 0 ? fallback : measured))
-      const openness = 0.12 + level * 0.88
+      const visibility = Math.max(0, Math.min(1, (level - 0.015) / 0.16))
+      const openness = 0.24 + level * 0.76
       mouth.setAttribute('transform', `translate(0 203) scale(1 ${openness}) translate(0 -203)`)
+      mouth.style.opacity = String(visibility)
+      restingMouth.style.opacity = String(1 - visibility)
       frame = window.requestAnimationFrame(animateMouth)
     }
     frame = window.requestAnimationFrame(animateMouth)
     return () => {
       window.cancelAnimationFrame(frame)
       mouth.removeAttribute('transform')
+      mouth.style.removeProperty('opacity')
+      restingMouth.style.removeProperty('opacity')
     }
   }, [speaking, speechLevel])
 
@@ -607,20 +614,23 @@ function NinoFace({ mood, gaze, blinking, look, speaking, speechLevel }: {
           <path className="dog-nose" d="M145 154Q160 145 175 154Q177 166 160 173Q143 166 145 154Z" />
           <path className="dog-nose-glint" d="M150 155Q156 151 161 153" />
 
-          {speaking ? (
+          <g ref={restingMouthRef} className="dog-resting-mouth">
+            {animated || mood === 'presente' ? (
+              <g className={`dog-mouth ${animated ? 'dog-mouth--open' : 'dog-mouth--smile'}`}>
+                <path d={animated ? 'M125 177Q160 211 195 177Q194 217 160 229Q126 217 125 177Z' : 'M132 180Q160 207 188 180Q185 211 160 219Q135 211 132 180Z'} />
+                <path className="dog-tongue" d={animated ? 'M143 207Q160 196 177 207Q174 231 160 235Q146 231 143 207Z' : 'M147 204Q160 196 173 204Q170 220 160 223Q150 220 147 204Z'} />
+              </g>
+            ) : curious ? (
+              <ellipse className="dog-mouth dog-mouth--surprised" cx="160" cy="192" rx="9" ry="11" />
+            ) : (
+              <path className={`dog-mouth-line dog-mouth-line--${mood}`} d={mouthPath} />
+            )}
+          </g>
+          {speaking && (
             <g ref={speakingMouthRef} className="dog-mouth dog-mouth--open dog-speaking-mouth">
               <path d="M128 178Q160 209 192 178Q190 216 160 229Q130 216 128 178Z" />
               <path className="dog-tongue" d="M145 207Q160 198 175 207Q172 226 160 230Q148 226 145 207Z" />
             </g>
-          ) : animated || mood === 'presente' ? (
-            <g className={`dog-mouth ${animated ? 'dog-mouth--open' : 'dog-mouth--smile'}`}>
-              <path d={animated ? 'M125 177Q160 211 195 177Q194 217 160 229Q126 217 125 177Z' : 'M132 180Q160 207 188 180Q185 211 160 219Q135 211 132 180Z'} />
-              <path className="dog-tongue" d={animated ? 'M143 207Q160 196 177 207Q174 231 160 235Q146 231 143 207Z' : 'M147 204Q160 196 173 204Q170 220 160 223Q150 220 147 204Z'} />
-            </g>
-          ) : curious ? (
-            <ellipse className="dog-mouth dog-mouth--surprised" cx="160" cy="192" rx="9" ry="11" />
-          ) : (
-            <path className={`dog-mouth-line dog-mouth-line--${mood}`} d={mouthPath} />
           )}
         </g>
 
@@ -651,7 +661,6 @@ function App() {
   const [voiceLabOpen, setVoiceLabOpen] = useState(false)
   const [voiceEngine, setVoiceEngine] = useState<VoiceEngine>('local')
   const [speaking, setSpeaking] = useState(false)
-  const [, setSpeechBeat] = useState(0)
   const activityTimer = useRef<number | null>(null)
   const suggestionTimer = useRef<number | null>(null)
   const speechToken = useRef(0)
@@ -663,15 +672,13 @@ function App() {
     speechToken.current = token
     neuralVoice.current?.stop()
     if ('speechSynthesis' in window) window.speechSynthesis.cancel()
+    speechLevel.current = 0
+    setSpeaking(false)
 
     const profileSettings = voiceProfiles[profile]
     const start = () => {
       if (speechToken.current !== token) return
       setSpeaking(true)
-      setSpeechBeat((value) => value + 1)
-    }
-    const beat = () => {
-      if (speechToken.current === token) setSpeechBeat((value) => value + 1)
     }
     const finish = () => {
       if (speechToken.current === token) {
@@ -698,7 +705,6 @@ function App() {
         ?? voices.find((voice) => voice.lang.toLowerCase().startsWith('pt'))
         ?? null
       utterance.onstart = start
-      utterance.onboundary = beat
       utterance.onend = finish
       utterance.onerror = finish
       window.speechSynthesis.speak(utterance)
@@ -708,9 +714,9 @@ function App() {
     neuralVoice.current ??= new NinoRealtimeVoice()
     void neuralVoice.current.speak(text, profileSettings.neuralStyle, {
       onStart: start,
-      onBeat: beat,
       onLevel: (level) => { speechLevel.current = level },
       onEnd: finish,
+      onError: playLocalFallback,
     }).then(() => {
       if (speechToken.current === token) setVoiceEngine('neural')
     }).catch(playLocalFallback)

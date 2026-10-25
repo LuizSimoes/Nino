@@ -1,48 +1,35 @@
-# Decisões e lacunas — Etapa 1
+# Decisões e lacunas — Nino v0.1
 
-## Artefatos ausentes
+## Decisões atuais
 
-Na inspeção inicial do espaço de trabalho, em 24 de outubro de 2026, não foram encontrados:
+- **Personagem aprovado:** cão dourado antropomórfico inspirado na memória afetiva de um mestiço de Golden Retriever, sem pretender ser um retrato literal.
+- **Visual principal:** ilustração vetorial com volume, luz e sombra que produz leitura 3D em escala pequena. As alternativas anteriores de robô retrô, coruja e pixel art permanecem somente no histórico do código.
+- **Proporção:** cabeça grande, corpo compacto, membros finos e cauda volumosa para manter simpatia e boa leitura no dock.
+- **Expressividade:** nove estados combinam olhos, boca, cabeça, orelhas, braços, patas, cauda, efeitos e legenda.
+- **Pingente:** funciona como expressão secundária. Usa pulso, interrogação, lâmpada, reticências, Z, alvo, interrogação invertida, coração ou estrela.
+- **Boca e fala:** a boca reage à amplitude real do áudio neural. Em pausas, a expressão de repouso reaparece; a boca falante volta com a continuação do som.
+- **Voz:** Nino cartoon é o padrão. A voz neural WebRTC é somente de saída e cai automaticamente para o sintetizador local quando necessário.
+- **Privacidade:** não há captura de microfone ou câmera, conta, cookies, analytics, memória persistente ou armazenamento dos sinais locais.
+- **Interface:** dock lateral de até 25% da largura no desktop, limitado a 360 px; em telas estreitas usa até 300 px e não cria rolagem da página.
+- **Intuição:** usa somente tempo e ações da sessão atual para simular sugestões locais, sempre dispensáveis e pausáveis.
 
-- `Plano_Nino_Planejamento_Consolidado_v1_1.md`
-- `Kit_Especificacao_Nino_v0_1.zip`
-- `Especificacao_Funcional_Tecnica_Nino_v0_1.md`
-- `PROMPT_Implementacao_Etapa_1.md`
+## Ativos preservados
 
-A especificação incorporada à solicitação foi adotada como fonte de verdade. Quando os arquivos forem anexados, será necessário reconciliar requisitos, nomes, fluxos e critérios de aceite sem presumir conteúdo ausente.
+- `public/models/nino-v6.glb` e `outputs/3d/Nino_v6_complete.glb`: modelo Blender/GLB para evolução futura.
+- `outputs/3d/`: cenas, manifestos e prévias das nove expressões produzidas durante a exploração 3D.
+- `src/Nino3D.tsx`: carregador Three.js preservado, mas não usado na experiência principal.
+- `NinoFacePixel` e `NinoFaceRobot3D` em `src/App.tsx`: conceitos anteriores mantidos como alternativas reversíveis e removidos do pacote final pelo build quando não referenciados.
 
-## Decisões reversíveis
+## Segurança e publicação
 
-- **Variantes preservadas:** o robô Pixel 3D permanece no componente `NinoFacePixel` e o robô 3D suave permanece no componente `NinoFaceRobot3D`, permitindo retorno a qualquer uma das duas direções sem reconstrução.
-- **Conceito aprovado — Nino v1:** o personagem principal é um cão 3D inspirado na memória afetiva de um mestiço de Golden Retriever, sem pretender ser um retrato literal: pelagem dourada, peito claro, orelhas caídas, focinho, cauda volumosa e postura antropomórfica.
-- **Folha oficial:** a prancha `outputs/nino-v1-folha-oficial-personagem.png` consolida frente, perfil, costas e cinco estudos de expressão para orientar a futura modelagem 3D.
-- **Pacote de modelagem:** `outputs/nino-v1-construcao-rig-3d.png`, `outputs/nino-v1-expressoes-visemas.png` e `outputs/NINO_V1_ESPECIFICACAO_MODELAGEM_RIG.md` definem construção, articulações, materiais, visemas, estados e critérios de exportação.
-- **Modelagem iniciada no Blender:** a versão 5.2.3 LTS foi detectada e a primeira cena editável foi criada em `outputs/3d/Nino_v1_blockout.blend`, acompanhada de um GLB de teste e uma prévia renderizada.
-- **Passagem de expressões 3D concluída:** `outputs/3d/Nino_v1_expressions.blend` e `Nino_v1_expressions.glb` contêm nove ações emocionais, com prévias individuais e manifesto. Cabeça, orelhas, olhos, boca, tronco, braços e cauda variam por estado; o eixo dos braços foi corrigido para manter as patas visíveis e ligadas ao corpo. A interface ainda é vetorial; escultura, retopologia, IK, pesos finais, símbolos 3D do pingente e integração web permanecem pendentes.
-- **Refinamento 3D reversível:** `outputs/3d/Nino_v2_refined.blend` preserva a versão anterior e acrescenta controles de pulso por IK, boca menor, sobrancelhas mais finas, microtextura suave de pelagem, volume interno nas orelhas e uma mecha curta assimétrica. A primeira mecha simétrica foi descartada durante a revisão por lembrar a coroa rejeitada no conceito anterior.
-- **Diagnóstico do modo background:** neste ambiente protegido, o Blender encerra com código 139 ao inicializar o backend Metal em `--background`. A interface gráfica abre e executa o script de construção normalmente; por isso os artefatos foram gerados pelo console Python interno do Blender.
-- **Expressão canina:** olhos grandes com direção variável, inclinações de cabeça e orelhas, nove bocas/poses, língua, cauda abanando e patas conectadas aos braços dão leitura emocional mesmo na escala compacta.
-- **Novo conceito:** a referência oitentista foi abandonada para evitar que nostalgia, monitor e fósforo limitassem a simpatia e a expressividade do personagem.
-- **Personagem:** Nino voltou a ser um robô digital de estética 16-bit, com proporções próximas à referência: cabeça grande, tronco menor, braços segmentados, mãos geométricas, pernas longas e duas telas. A coruja, a coroa e o conceito de criatura com orelhas foram abandonados.
-- **Apelo afetivo:** o visor ocupa quase metade do personagem e concentra grandes olhos, bochechas e boca visível. O estado neutro tem sorriso aberto; surpresa, alegria, dúvida, concentração e carinho usam olhos e bocas próprios.
-- **Referência visual:** a nova imagem enviada orientou a hierarquia entre cabeça, visor, corpo quadrado e membros segmentados. Geometria, proporções, paleta, rosto, poses e movimentos foram redesenhados para manter o Nino original.
-- **Profundidade:** o pixel é tratado como volume. Cabeça, tronco, pernas e botas possuem face frontal, topo claro, lateral sombreada, extrusão e sombra de contato; o resultado preserva o 16-bit com leitura tridimensional.
-- **Movimento:** cada braço e sua mão formam um único conjunto animado, impedindo separações nas poses. Os membros foram afinados e afastados do tronco. Cada estado também usa inclinação e escala do visor, assimetria dos olhos, boca e pequenos acentos cromáticos próprios.
-- **Escala facial:** as bocas foram reduzidas para preservar espaço negativo no visor e manter os olhos como elemento expressivo principal.
-- **Monitor corporal:** o painel no peito funciona como expressão secundária sincronizada, exibindo pulso, interrogação, exclamação, reticências, coração, estrela ou `z` conforme o estado do Nino.
-- **Repertório emocional:** o Nino possui nove estados. Cinco permanecem visíveis na barra principal e quatro ficam em um painel compacto aberto pelo botão `Mais`, evitando aumentar permanentemente a interface.
-- **Cor:** fundo índigo profundo, turquesa, lavanda, coral e creme substituem o verde-fósforo e as scanlines.
-- **Interface:** a experiência funciona como um painel lateral e ocupa no máximo 25% da largura da tela em desktop e tablet, com exceção responsiva em telas pequenas. A altura acompanha o conteúdo para eliminar o espaço vazio acima do Nino; diálogos e confirmações usam composição compacta e ações empilhadas.
-- **Cartão de Intuição:** o cartão é contido pelo próprio dock, com largura calculada internamente, quebra segura de texto e ações empilhadas; não ultrapassa nem é recortado pelas bordas do painel.
-- **Repouso:** a piscada ocorre em intervalo regular curto, o olhar alterna entre três posições e o cochilo dura cerca de cinco segundos quando demonstrado.
-- **Intuição:** a sugestão é um cartão lateral não modal; pode ser fechada, recusada ou desativada globalmente.
-- **Sinais locais:** somente tempo de permanência na tela e interações com controles são representados. Eles não são armazenados nem enviados.
-- **Dados:** não há cookies, `localStorage`, analytics ou permissões de dispositivo. Sem uma chave local, a aplicação não faz chamadas externas; com a voz neural ativada, envia somente o texto falado e os metadados técnicos da sessão WebRTC.
-- **Voz neural opcional:** a experiência pode abrir uma sessão WebRTC somente de saída com `gpt-realtime-2.1-mini`. A chave fica no servidor local, o navegador recebe apenas o áudio, a interface identifica a voz como gerada por IA e o sintetizador local permanece como alternativa automática.
+- A chave da OpenAI fica apenas em `.env.local` no desenvolvimento e em `OPENAI_API_KEY` na Vercel.
+- A função `api/realtime-session.js` aceita somente `POST`, limita origem, tamanho e frequência básica e nunca devolve a chave ao navegador.
+- `NINO_ALLOWED_ORIGIN` restringe a origem publicada a `https://nino-phi.vercel.app`.
+- Para tráfego público relevante, ainda será necessário acrescentar autenticação e limitação persistente no provedor.
 
-## Riscos e próximos passos, sem antecipação
+## Lacunas e próximos passos
 
-- Reconciliar os artefatos originais quando estiverem disponíveis.
-- Fazer uma rodada curta de teste com usuários para calibrar frequência, tom e percepção de invasividade da Intuição.
-- Antes de ampliar a integração externa além da voz, definir backend, consentimento, tratamento de dados e confirmação de ações sensíveis.
-- A voz neural está preparada, mas ainda depende de configuração explícita, autorização para o primeiro teste conectado e avaliação auditiva; identificação de locutor permanece fora do escopo.
+- Fazer uma rodada curta de teste com usuários para calibrar voz, tempo do cochilo e percepção da Intuição.
+- Decidir se o próximo marco evolui a ilustração vetorial ou retoma o modelo Blender para rig, retopologia e acabamento final.
+- Adicionar testes automatizados do protocolo WebRTC quando houver infraestrutura de testes no projeto.
+- Reconciliar eventuais especificações externas antigas caso sejam recuperadas, preservando as decisões aprovadas durante esta sessão.

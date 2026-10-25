@@ -1,6 +1,6 @@
 # Nino v0.1 — Primeiro Contato
 
-Protótipo local do Nino: um personagem canino 3D inspirado na memória afetiva de um mestiço de Golden Retriever. A experiência apresenta nove estados emocionais, olhar responsivo, microcomportamentos de repouso, pingente expressivo e uma demonstração controlável de Intuição local.
+Protótipo do Nino: um personagem canino com aparência 3D inspirado na memória afetiva de um mestiço de Golden Retriever. A experiência apresenta nove estados emocionais, olhar responsivo, microcomportamentos de repouso, pingente expressivo, voz opcional e uma demonstração controlável de Intuição local.
 
 ## Executar no macOS
 
@@ -55,9 +55,9 @@ A rota publicada aceita somente `POST`, limita tamanho, origem e frequência bá
 ## Estado atual
 
 - A interface usa como personagem principal a ilustração vetorial dourada escolhida durante os testes. O modelo [`Nino_v6_complete.glb`](outputs/3d/Nino_v6_complete.glb) permanece preservado como base 3D para evoluções futuras.
-- Os nove botões controlam as poses corporais, as expressões faciais, o piscar com pálpebras douradas, os olhos fechados do cochilo e os símbolos do pingente no modelo 3D.
+- Os nove botões controlam as poses corporais, as expressões faciais, o piscar com pálpebras douradas, os olhos fechados do cochilo e os símbolos do pingente na ilustração principal.
 - A boca vetorial acompanha a amplitude real do áudio neural, fecha durante pausas, retoma na frase seguinte e preserva a expressão emocional após a fala.
-- O olhar acompanha discretamente o ponteiro por rotação tridimensional do personagem.
+- O olhar acompanha discretamente o ponteiro pelo deslocamento das pupilas.
 - O blockout estabelece proporções, materiais, peças faciais, esqueleto, testes de fala e nove ações emocionais. Escultura, retopologia e pesos finais continuam como etapas posteriores de acabamento.
 - A voz tenta usar o modelo neural `gpt-realtime-2.1-mini` por WebRTC quando uma chave local está configurada; sem ela, usa automaticamente o sintetizador do navegador em português.
 - O comparador permite ouvir **Nino divertido**, **Nino cartoon**, **Pequeno inventor** e **Jovem aventureiro**. **Nino cartoon** é o perfil padrão: masculino, infantojuvenil, rápido, sorridente e expressivo.
@@ -80,7 +80,7 @@ Consulte [`docs/ESCOPO_ETAPA_1.md`](docs/ESCOPO_ETAPA_1.md) para os critérios d
 
 ## Estrutura para versionamento
 
-- `src/`: aplicação React, carregador Three.js do Nino e alternativa vetorial.
+- `src/`: aplicação React, ilustração vetorial principal, integração de voz e carregador Three.js preservado para a futura evolução do modelo.
 - `api/realtime-session.js`: backend serverless da voz neural para publicação na Vercel.
 - `public/models/nino-v6.glb`: cópia do modelo atual servida pelo aplicativo.
 - `docs/`: escopo, decisões e lacunas.

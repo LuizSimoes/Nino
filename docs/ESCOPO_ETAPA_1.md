@@ -1,52 +1,55 @@
-# Nino v0.1 — Escopo e critérios de aceite da Etapa 1
+# Nino v0.1 — Escopo e critérios de aceite
 
 ## Objetivo
 
-Validar a identidade visual, a sensação de presença e o princípio de Intuição contextual discreta em uma experiência totalmente local no navegador do MacBook.
+Validar a identidade visual, a sensação de presença, a fala expressiva e o princípio de Intuição contextual discreta em um dock compacto no navegador.
 
 ## Dentro do escopo
 
-- Aplicação React + TypeScript + Vite.
-- Rosto original do Nino desenhado em SVG e adaptável a telas menores.
-- Estética retrô verde-fósforo com texto legível e foco visível.
-- Repouso com piscar, olhar ao redor e cochilo demonstrável.
-- Seletor direto de expressões com estados visuais claramente distintos.
+- Aplicação React + TypeScript + Vite publicada na Vercel.
+- Nino canino dourado em SVG, com aparência 3D e proporções inspiradas em um mestiço de Golden Retriever.
+- Nove estados: presente, curioso, animado, pensando, cochilando, concentrado, confuso, acolhedor e orgulhoso.
+- Poses corporais, olhos, boca, cauda, efeitos e pingente próprios para cada estado.
+- Piscar com pálpebras, olhar responsivo, cochilo demonstrável e retorno automático ao estado presente.
+- Voz neural somente de saída por WebRTC, com alternativa automática pelo sintetizador do navegador.
+- Boca sincronizada à amplitude do áudio neural, preservando a expressão de repouso durante pausas.
+- Comparador de quatro perfis de voz, com **Nino cartoon** como padrão.
 - Intuição local com sugestão não modal, dispensável e pausável.
 - Indicadores explícitos de microfone e câmera desligados.
+- Dock de até 25% da largura do desktop, com variante estreita sem rolagem da página.
 - Respeito à preferência do sistema por movimento reduzido.
-- Instruções locais de execução e build.
 
 ## Fora do escopo
 
-- Backend Node, integração com modelos de IA ou armazenamento remoto.
-- Voz, conversação por áudio, câmera ou identificação de locutor.
-- Memória persistente e sincronização entre dispositivos.
-- Modo visitante completo, autenticação ou ações sensíveis reais.
-- Publicação, telemetria, analytics ou envio de dados.
-
-## Extensão experimental posterior
-
-Após a validação visual inicial, foi acrescentada uma voz de saída opcional. Ela usa uma sessão WebRTC somente de recepção quando há configuração local explícita, mantém o microfone desligado e volta automaticamente ao sintetizador do navegador quando a integração neural não está disponível. Conversação por áudio, captura de voz e identificação de locutor continuam fora do escopo.
+- Captura de microfone ou câmera.
+- Conversação aberta, identificação de locutor ou escuta contínua.
+- Conta, autenticação, memória persistente ou sincronização entre dispositivos.
+- Analytics, telemetria, cookies ou armazenamento dos sinais da Intuição.
+- Ações sensíveis reais ou integrações externas além da geração opcional de voz.
+- Escultura, retopologia e rig final do modelo Blender preservado para uma etapa futura.
 
 ## Critérios de aceite
 
-1. A aplicação inicia localmente com `npm run dev` e gera produção com `npm run build`.
-2. A primeira tela identifica claramente “Nino v0.1 — Primeiro Contato”.
-3. O rosto SVG permanece visível em repouso e realiza piscadas e mudanças de olhar automáticas.
-4. O usuário consegue alternar entre cinco expressões, iniciar um cochilo curto e observar o retorno automático ao estado presente.
-5. Uma sugestão de Intuição aparece sem modal, pode ser dispensada e nunca executa uma ação externa.
-6. A Intuição pode ser pausada e, pausada, não exibe nem permite novas sugestões.
-7. A interface explica quais sinais locais a demonstração utiliza.
-8. Microfone e câmera aparecem como desligados e a aplicação não solicita suas permissões.
-9. Controles essenciais são operáveis por teclado, têm foco visível e nomes acessíveis.
-10. A experiência principal cabe na viewport de referência sem rolagem, permanece utilizável em tela móvel e respeita `prefers-reduced-motion`.
+1. A aplicação inicia com `npm run dev` e gera a versão de produção com `npm run build`.
+2. O Nino permanece totalmente visível dentro do dock, sem rolagem da página.
+3. Os nove controles exibem estado, legenda, pose, rosto e pingente correspondentes.
+4. O cochilo fecha os olhos, mantém a boca funcional durante a fala e retorna ao estado presente em cerca de cinco segundos.
+5. A boca acompanha o áudio, para nas pausas sem desaparecer e retoma na frase seguinte.
+6. Trocas rápidas de expressão cancelam a fala anterior sem misturar animações ou áudio.
+7. A voz neural usa a chave somente no servidor e recorre à voz local quando indisponível.
+8. A Intuição aparece sem bloquear a interface, pode ser dispensada e pode ser pausada.
+9. Microfone e câmera permanecem desligados e nenhuma permissão é solicitada.
+10. Os controles possuem nomes acessíveis, foco visível e operação por teclado.
+11. A interface permanece utilizável em uma viewport de 390 px sem rolagem horizontal.
+12. `.env.local` permanece ignorado e nenhuma chave é versionada.
 
 ## Validação manual essencial
 
-- Aguardar cerca de oito segundos e confirmar a sugestão automática.
-- Fechar a sugestão com “Agora não” e confirmar que a tela continua utilizável.
-- Pausar a Intuição e confirmar que “Demonstrar intuição” fica indisponível.
-- Reativar, demonstrar a Intuição e aceitar a sugestão.
-- Selecionar as cinco expressões, iniciar “Cochilo” e confirmar o retorno automático em aproximadamente cinco segundos.
-- Navegar por Tab e verificar o foco nos controles.
-- Reduzir a janela para largura próxima de 390 px e verificar ausência de rolagem horizontal de conteúdo.
+- Acionar cada uma das nove expressões e conferir legenda, rosto, pose e pingente.
+- Trocar rapidamente entre Pensando, Eureca e Acolhedor enquanto o Nino fala.
+- Ouvir uma frase com pausa e confirmar que a boca repousa e volta a mover na continuação.
+- Iniciar Cochilo, confirmar olhos fechados e observar o retorno automático.
+- Abrir e fechar o comparador de vozes, testar as quatro opções e manter Nino cartoon.
+- Demonstrar, aceitar, recusar e pausar a Intuição.
+- Navegar por Tab, conferir foco e nomes acessíveis.
+- Testar em 1440 × 900 e 390 × 844 e confirmar ausência de rolagem da página.

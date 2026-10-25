@@ -1,8 +1,19 @@
 type SpeechCallbacks = {
   onStart: () => void
   onEnd: () => void
-  onBeat: () => void
+  onError: () => void
   onLevel: (level: number) => void
+}
+
+type RealtimeEvent = {
+  type?: string
+  response_id?: string
+  response?: {
+    id?: string
+    status?: 'completed' | 'cancelled' | 'failed' | 'incomplete' | 'in_progress'
+    metadata?: Record<string, string> | null
+  }
+  error?: { event_id?: string; code?: string; message?: string; type?: string }
 }
 
 export class NinoRealtimeVoice {
@@ -14,12 +25,27 @@ export class NinoRealtimeVoice {
   private analyser: AnalyserNode | null = null
   private levelFrame: number | null = null
   private finishTimer: number | null = null
-  private responseFinished = false
-  private silentSince: number | null = null
   private smoothedLevel = 0
-  private hasAudibleLevel = false
   private connecting: Promise<void> | null = null
   private callbacks: SpeechCallbacks | null = null
+  private requestSequence = 0
+  private currentRequestId: string | null = null
+  private activeResponseId: string | null = null
+  private audioStarted = false
+
+  private armFinishTimer(delay: number, fallbackOnTimeout = false) {
+    if (this.finishTimer !== null) window.clearTimeout(this.finishTimer)
+    this.finishTimer = window.setTimeout(
+      () => fallbackOnTimeout ? this.failSpeech() : this.finishSpeech(),
+      delay,
+    )
+  }
+
+  private failSpeech() {
+    const onError = this.callbacks?.onError
+    this.finishSpeech()
+    onError?.()
+  }
 
   private finishSpeech() {
     const callbacks = this.callbacks
@@ -28,10 +54,10 @@ export class NinoRealtimeVoice {
     if (this.finishTimer !== null) window.clearTimeout(this.finishTimer)
     this.levelFrame = null
     this.finishTimer = null
-    this.responseFinished = false
-    this.silentSince = null
     this.smoothedLevel = 0
-    this.hasAudibleLevel = false
+    this.currentRequestId = null
+    this.activeResponseId = null
+    this.audioStarted = false
     callbacks?.onLevel(0)
     callbacks?.onEnd()
   }
@@ -75,19 +101,7 @@ export class NinoRealtimeVoice {
       const shaped = Math.pow(measured, 0.68)
       const smoothing = shaped > this.smoothedLevel ? 0.48 : 0.24
       this.smoothedLevel += (shaped - this.smoothedLevel) * smoothing
-      if (this.smoothedLevel > 0.035) this.hasAudibleLevel = true
       this.callbacks.onLevel(this.smoothedLevel)
-
-      const now = performance.now()
-      if (this.responseFinished && this.hasAudibleLevel && this.smoothedLevel < 0.025) {
-        this.silentSince ??= now
-        if (now - this.silentSince > 1100) {
-          this.finishSpeech()
-          return
-        }
-      } else {
-        this.silentSince = null
-      }
       this.levelFrame = window.requestAnimationFrame(analyse)
     }
     this.levelFrame = window.requestAnimationFrame(analyse)
@@ -116,25 +130,47 @@ export class NinoRealtimeVoice {
 
       const channel = peer.createDataChannel('oai-events')
       channel.addEventListener('message', (message) => {
-        const event = JSON.parse(message.data) as { type?: string }
-        if (event.type === 'response.created') {
-          this.responseFinished = false
-          this.silentSince = null
-          this.callbacks?.onStart()
+        let event: RealtimeEvent
+        try {
+          event = JSON.parse(message.data) as RealtimeEvent
+        } catch {
+          return
         }
-        if (event.type === 'response.output_audio.delta') {
+        if (event.type === 'response.created') {
+          const requestId = event.response?.metadata?.nino_request_id
+          const responseId = event.response?.id
+          if (!requestId || requestId !== this.currentRequestId) {
+            if (responseId && channel.readyState === 'open') {
+              channel.send(JSON.stringify({ type: 'response.cancel', response_id: responseId }))
+            }
+            return
+          }
+          this.activeResponseId = responseId ?? null
+          this.armFinishTimer(12000, true)
+        }
+        if (event.type === 'output_audio_buffer.started') {
+          if (event.response_id !== this.activeResponseId) return
+          this.audioStarted = true
           this.callbacks?.onStart()
-          this.callbacks?.onBeat()
+          this.armFinishTimer(15000)
+        }
+        if (event.type === 'output_audio_buffer.stopped' || event.type === 'output_audio_buffer.cleared') {
+          if (event.response_id !== this.activeResponseId) return
+          if (this.audioStarted) this.finishSpeech()
+          else this.failSpeech()
         }
         if (event.type === 'response.done') {
-          this.responseFinished = true
-          // O evento indica que a geração acabou, mas o navegador ainda pode ter
-          // vários segundos de áudio no buffer. O analisador encerra antes quando
-          // detectar silêncio real; este timer é apenas uma proteção de emergência.
-          this.finishTimer = window.setTimeout(() => this.finishSpeech(), this.analyser ? 12000 : 700)
+          if (event.response?.id !== this.activeResponseId) return
+          if (event.response.status !== 'completed') {
+            this.failSpeech()
+            return
+          }
+          // response.done encerra a geração, não a reprodução. O encerramento
+          // normal ocorre em output_audio_buffer.stopped; este timer é só uma proteção.
+          this.armFinishTimer(8000, !this.audioStarted)
         }
-        if (event.type === 'response.cancelled' || event.type === 'error') {
-          this.finishSpeech()
+        if (event.type === 'error' && event.error?.event_id === this.currentRequestId) {
+          this.failSpeech()
         }
       })
 
@@ -153,17 +189,23 @@ export class NinoRealtimeVoice {
       }
 
       await peer.setRemoteDescription({ type: 'answer', sdp: await response.text() })
-      await new Promise<void>((resolve, reject) => {
-        const timeout = window.setTimeout(() => reject(new Error('Tempo esgotado ao conectar a voz neural.')), 12000)
-        channel.addEventListener('open', () => {
-          window.clearTimeout(timeout)
-          resolve()
-        }, { once: true })
-        channel.addEventListener('error', () => {
-          window.clearTimeout(timeout)
-          reject(new Error('Não foi possível abrir o canal de voz.'))
-        }, { once: true })
-      })
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const timeout = window.setTimeout(() => reject(new Error('Tempo esgotado ao conectar a voz neural.')), 12000)
+          channel.addEventListener('open', () => {
+            window.clearTimeout(timeout)
+            resolve()
+          }, { once: true })
+          channel.addEventListener('error', () => {
+            window.clearTimeout(timeout)
+            reject(new Error('Não foi possível abrir o canal de voz.'))
+          }, { once: true })
+        })
+      } catch (error) {
+        channel.close()
+        peer.close()
+        throw error
+      }
 
       this.peer = peer
       this.channel = channel
@@ -181,33 +223,36 @@ export class NinoRealtimeVoice {
     this.ensureAudioAnalysis()
     await this.connect()
     this.stop()
+    const requestId = `nino-response-${++this.requestSequence}`
     this.callbacks = callbacks
-    this.responseFinished = false
-    this.silentSince = null
+    this.currentRequestId = requestId
+    this.activeResponseId = null
+    this.audioStarted = false
     this.smoothedLevel = 0
-    this.hasAudibleLevel = false
     this.startLevelAnalysis()
 
     this.channel?.send(JSON.stringify({
-      type: 'conversation.item.create',
-      item: {
-        type: 'message',
-        role: 'user',
-        content: [{ type: 'input_text', text }],
-      },
-    }))
-    this.channel?.send(JSON.stringify({
       type: 'response.create',
+      event_id: requestId,
       response: {
+        conversation: 'none',
+        metadata: { nino_request_id: requestId },
+        input: [{
+          type: 'message',
+          role: 'user',
+          content: [{ type: 'input_text', text }],
+        }],
         output_modalities: ['audio'],
         instructions: `${style} Leia somente o texto enviado, sem acrescentar comentários.`,
       },
     }))
+    this.armFinishTimer(12000, true)
   }
 
   stop() {
-    if (this.channel?.readyState === 'open' && this.callbacks) {
-      this.channel.send(JSON.stringify({ type: 'response.cancel' }))
+    if (this.channel?.readyState === 'open' && this.activeResponseId) {
+      this.channel.send(JSON.stringify({ type: 'response.cancel', response_id: this.activeResponseId }))
+      this.channel.send(JSON.stringify({ type: 'output_audio_buffer.clear' }))
     }
     this.finishSpeech()
   }
