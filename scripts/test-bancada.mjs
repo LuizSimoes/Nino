@@ -40,7 +40,7 @@ assert.throws(() => sanitizeCode({ name: 'teste.exe', text: 'binary' }), /CODE_I
 assert.throws(() => sanitizeCode({ name: '../teste.ino', text: 'void loop(){}' }), /CODE_INVALID/)
 assert.throws(() => sanitizeCode({ name: 'teste.ino', text: '\u0000binary' }), /CODE_INVALID/)
 assert.throws(() => sanitizeCode({ name: 'teste.ino', text: 'x'.repeat(24001) }), /CODE_TOO_LARGE/)
-assert.throws(() => sanitizeConversation('teste', [], {}, testImage, sourceCode), /ATTACHMENT_CONFLICT/)
+assert.deepEqual(sanitizeConversation('teste', [], {}, testImage, sourceCode).code, sourceCode)
 const corrected = 'void setup() {}\nvoid loop() {\n  unsigned long now_ms = millis();\n}\n'
 try {
   globalThis.fetch = async (_url, options) => {
@@ -60,8 +60,16 @@ assert.throws(() => sanitizePdf({ ...pdf, name: '../teste.pdf' }), /PDF_INVALID/
 assert.throws(() => sanitizePdf({ ...pdf, data: 'https://example.com/teste.pdf' }), /PDF_INVALID/)
 assert.throws(() => sanitizePdf({ ...pdf, data: 'data:application/pdf;base64,aGVsbG8=' }), /PDF_INVALID/)
 assert.throws(() => sanitizePdf({ ...pdf, data: 'x'.repeat(2_796_233) }), /PDF_TOO_LARGE/)
-assert.throws(() => sanitizeConversation('teste', [], {}, undefined, sourceCode, pdf), /ATTACHMENT_CONFLICT/)
-assert.throws(() => sanitizeConversation('teste', [], {}, testImage, undefined, pdf), /ATTACHMENT_CONFLICT/)
+const combinedConversation = sanitizeConversation('Compare os anexos', [], {}, testImage, sourceCode, pdf)
+assert.equal(combinedConversation.image, testImage)
+assert.deepEqual(combinedConversation.pdf, pdf)
+assert.deepEqual(combinedConversation.code, sourceCode)
+const fullPdfBytes = Buffer.alloc(2 * 1024 * 1024, 32)
+fullPdfBytes.write('%PDF-1.4\n')
+fullPdfBytes.write('%%EOF\n', fullPdfBytes.length - 6)
+const fullPdf = { name: 'limite.pdf', data: `data:application/pdf;base64,${fullPdfBytes.toString('base64')}` }
+assert.equal(sanitizeConversation('teste', [], {}, undefined, undefined, fullPdf).pdf.name, 'limite.pdf')
+assert.throws(() => sanitizeConversation('teste', [], {}, testImage, undefined, fullPdf), /ATTACHMENTS_TOO_LARGE/)
 try {
   globalThis.fetch = async (_url, options) => {
     const request = JSON.parse(options.body)
@@ -72,7 +80,21 @@ try {
   }
   await createNinoReply({ apiKey: 'test', message: 'Consulte o PDF', history: [], pdf })
 } finally { globalThis.fetch = realFetch }
-console.log('Validação local: PDF na Responses API, referência de página e conflitos de anexo aprovados (serviço simulado).')
+console.log('Validação local: PDF na Responses API, regras de referência e limites aprovados (serviço simulado).')
+try {
+  globalThis.fetch = async (_url, options) => {
+    const request = JSON.parse(options.body)
+    const parts = request.input.at(-1).content
+    assert.deepEqual(parts.map((item) => item.type), ['input_text', 'input_image', 'input_file'])
+    assert.ok(parts[0].text.includes(JSON.stringify(sourceCode)))
+    assert.equal(parts[1].image_url, testImage)
+    assert.equal(parts[2].file_data, pdf.data)
+    assert.ok(request.instructions.includes('# Consulta cruzada'))
+    return new Response(JSON.stringify({ output_text: JSON.stringify({ reply: 'As fontes precisam ser confrontadas.', mood: 'concentrado', code: null }) }))
+  }
+  await createNinoReply({ apiKey: 'test', ...combinedConversation })
+} finally { globalThis.fetch = realFetch }
+console.log('Consulta cruzada: imagem, código e PDF presentes na mesma requisição; limite total validado.')
 
 // Opt-in explícito: exercita a rota real e pode consumir a API configurada.
 const endpoint = process.argv.find((arg) => arg.startsWith('--endpoint='))?.slice(11)

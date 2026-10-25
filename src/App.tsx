@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { NinoRealtimeVoice } from './realtimeVoice'
 import { askNino, type NinoChatMessage } from './ninoChat'
-import { prepareLabAttachment, attachmentAccept, type LabAttachment } from './labAttachment'
+import { prepareLabAttachment, mergeLabAttachments, attachmentBytes, attachmentAccept, type LabAttachment } from './labAttachment'
 import { responseText, conversationText, downloadConversation } from './conversationExport'
 
 type NinoMood = 'presente' | 'curioso' | 'animado' | 'pensando' | 'cochilando' | 'concentrado' | 'confuso' | 'acolhedor' | 'orgulhoso'
@@ -722,10 +722,13 @@ function App() {
   const [chatInput, setChatInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
   const [chatError, setChatError] = useState<string | null>(null)
-  const [attachment, setAttachment] = useState<LabAttachment | undefined>()
-  const chatImage = attachment?.kind === 'image' ? attachment.image : undefined
-  const chatCode = attachment?.kind === 'code' ? attachment.code : undefined
-  const chatPdf = attachment?.kind === 'pdf' ? attachment.pdf : undefined
+  const [attachments, setAttachments] = useState<LabAttachment[]>([])
+  const imageAttachment = attachments.find((item) => item.kind === 'image')
+  const chatImage = imageAttachment?.kind === 'image' ? imageAttachment.image : undefined
+  const codeAttachment = attachments.find((item) => item.kind === 'code')
+  const chatCode = codeAttachment?.kind === 'code' ? codeAttachment.code : undefined
+  const pdfAttachment = attachments.find((item) => item.kind === 'pdf')
+  const chatPdf = pdfAttachment?.kind === 'pdf' ? pdfAttachment.pdf : undefined
   const [imagePreparing, setImagePreparing] = useState(false)
   const [labContext, setLabContext] = useState<LabContext>(storedLabContext)
   const [labContextOpen, setLabContextOpen] = useState(false)
@@ -810,7 +813,7 @@ function App() {
   }
 
   const sendChatMessage = async () => {
-    const message = chatInput.trim() || (chatImage ? 'Analise esta imagem da bancada: o que é visível e qual o próximo teste útil?' : chatCode ? 'Revise o arquivo de código anexado e identifique problemas e próximos testes.' : chatPdf ? 'Identifique o documento anexado e resuma as informações técnicas úteis, citando as páginas consultadas.' : '')
+    const message = chatInput.trim() || (attachments.length > 1 ? 'Compare os anexos entre si: identifique compatibilidades e divergências, cite as páginas do PDF quando utilizado e proponha o próximo teste útil.' : chatImage ? 'Analise esta imagem da bancada: o que é visível e qual o próximo teste útil?' : chatCode ? 'Revise o arquivo de código anexado e identifique problemas e próximos testes.' : chatPdf ? 'Identifique o documento anexado e resuma as informações técnicas úteis, citando as páginas consultadas.' : '')
     if (!message || chatLoading || imagePreparing) return
     if (message.length > 4000) {
       setChatError('A mensagem ultrapassa 4 mil caracteres. Anexe o código como arquivo para enviá-lo inteiro.')
@@ -818,7 +821,7 @@ function App() {
     }
 
     const history = chatMessages.slice(-8)
-    const userMessage: NinoChatMessage = { role: 'user', content: message, image: chatImage, attachmentName: attachment?.name }
+    const userMessage: NinoChatMessage = { role: 'user', content: message, image: chatImage, attachmentName: attachments.length ? attachments.map((item) => item.name).join(' + ') : undefined }
     setChatMessages((current) => [...current, userMessage])
     setChatInput('')
     setChatError(null)
@@ -1131,20 +1134,32 @@ function App() {
           {chatError && <p className="chat-error" role="alert">{chatError}</p>}
           <div className="chat-image-tools">
             <label className="chat-image-picker">
-              {imagePreparing ? 'Preparando…' : attachment ? 'Trocar anexo' : '+ Anexar'}
-              <input type="file" accept={attachmentAccept} aria-label="Anexar imagem, código ou PDF" disabled={chatLoading || imagePreparing} onChange={async (event) => {
-                const file = event.currentTarget.files?.[0]
+              {imagePreparing ? 'Preparando…' : '+ Anexar'}
+              <input type="file" multiple accept={attachmentAccept} aria-label="Anexar imagem, código ou PDF" disabled={chatLoading || imagePreparing} onChange={async (event) => {
+                const files = Array.from(event.currentTarget.files ?? [])
                 event.currentTarget.value = ''
-                if (!file) return
+                if (!files.length) return
+                if (files.length + attachments.length > 3) { setChatError('Use até três anexos: uma imagem, um código e um PDF.'); return }
                 setImagePreparing(true)
                 setChatError(null)
-                try { setAttachment(await prepareLabAttachment(file)) }
-                catch (error) { setChatError(error instanceof Error ? error.message : 'Não consegui preparar o anexo.') }
+                try {
+                  const prepared: LabAttachment[] = []
+                  for (const file of files) prepared.push(await prepareLabAttachment(file))
+                  setAttachments(mergeLabAttachments(attachments, prepared))
+                }
+                catch (error) { setChatError(error instanceof Error ? error.message : 'Não consegui preparar os anexos.') }
                 finally { setImagePreparing(false) }
               }} />
             </label>
-            {attachment ? <>{chatImage && <img src={chatImage} alt="Prévia da imagem selecionada" />}<span className="chat-attachment-name" title={attachment.name}>{attachment.name}<br />{chatCode ? `${chatCode.text.length} caracteres · código` : attachment.kind === 'pdf' ? `${Math.ceil(attachment.size / 1024)} KB · PDF` : 'Imagem'} · usado nas próximas perguntas.</span><button type="button" aria-label="Remover anexo" disabled={chatLoading} onClick={() => setAttachment(undefined)}>×</button></> : <small>Imagem, código ou PDF · um por vez</small>}
+            <small>{attachments.length ? `${attachments.length}/3 anexos · ${Math.ceil(attachments.reduce((sum, item) => sum + attachmentBytes(item), 0) / 1024)} KB de 2048 KB` : 'Imagem + código + PDF · juntos até 2 MB'}</small>
           </div>
+          {attachments.length > 0 && <div className="chat-attachments" aria-label="Anexos selecionados">
+            {attachments.map((item) => <div className="chat-attachment-row" key={item.kind}>
+              {item.kind === 'image' && <img src={item.image} alt="Prévia da imagem selecionada" />}
+              <span className="chat-attachment-name" title={item.name}>{item.name}<small>{item.kind === 'image' ? 'Imagem' : item.kind === 'code' ? 'Código' : 'PDF'} · usado nas próximas perguntas</small></span>
+              <button type="button" aria-label={`Remover ${item.name}`} disabled={chatLoading || imagePreparing} onClick={() => { setAttachments((current) => current.filter((entry) => entry.kind !== item.kind)); setChatError(null) }}>×</button>
+            </div>)}
+          </div>}
           <form className="chat-composer" onSubmit={(event) => { event.preventDefault(); void sendChatMessage() }}>
             <textarea
               ref={chatInputRef}
@@ -1163,7 +1178,7 @@ function App() {
               placeholder="Pergunte sobre o circuito, código ou datasheet…"
               aria-label="Mensagem para o Nino"
             />
-            <button type="submit" disabled={chatLoading || imagePreparing || chatInput.length > 4000 || (!chatInput.trim() && !attachment)} aria-label="Enviar mensagem">↑</button>
+            <button type="submit" disabled={chatLoading || imagePreparing || chatInput.length > 4000 || (!chatInput.trim() && !attachments.length)} aria-label="Enviar mensagem">↑</button>
           </form>
           <small className="chat-privacy">{labContextCount ? 'Contexto temporário nesta aba' : 'Sem memória persistente'} · mensagens e anexos enviados são processados pela OpenAI</small>
         </section>

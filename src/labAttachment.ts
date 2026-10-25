@@ -5,6 +5,25 @@ export type PdfAttachment = { name: string; data: string }
 export type LabAttachment = { kind: 'image'; image: string; name: string } | { kind: 'code'; code: CodeAttachment; name: string } | { kind: 'pdf'; pdf: PdfAttachment; name: string; size: number }
 export const attachmentAccept = 'image/png,image/jpeg,image/webp,application/pdf,.pdf,.ino,.c,.cpp,.h,.hpp,.py,.js,.ts,.json,.txt'
 
+export function attachmentBytes(attachment: LabAttachment): number {
+  if (attachment.kind === 'code') return new TextEncoder().encode(attachment.code.text).length
+  const data = attachment.kind === 'image' ? attachment.image : attachment.pdf.data
+  const encoded = data.slice(data.indexOf(',') + 1)
+  return encoded.length * 3 / 4 - (encoded.endsWith('==') ? 2 : encoded.endsWith('=') ? 1 : 0)
+}
+
+export function mergeLabAttachments(current: LabAttachment[], incoming: LabAttachment[]): LabAttachment[] {
+  const merged = [...current, ...incoming]
+  if (merged.length > 3) throw new Error('Use até três anexos: uma imagem, um código e um PDF.')
+  const kinds = new Set<string>()
+  for (const item of merged) {
+    if (kinds.has(item.kind)) throw new Error('Use um arquivo de cada tipo. Remova o anexo anterior desse tipo para substituí-lo.')
+    kinds.add(item.kind)
+  }
+  if (merged.reduce((total, item) => total + attachmentBytes(item), 0) > 2 * 1024 * 1024) throw new Error('Os anexos juntos devem ter até 2 MB após preparação. Reduza a imagem ou exporte apenas as páginas relevantes do PDF.')
+  return merged
+}
+
 export async function prepareLabAttachment(file: File): Promise<LabAttachment> {
   if (/\.pdf$/i.test(file.name) || file.type === 'application/pdf') {
     if (!/\.pdf$/i.test(file.name) || file.name.length > 180 || /[/\\\u0000-\u001f]/.test(file.name)) throw new Error('Use um nome de arquivo PDF válido, com até 180 caracteres.')

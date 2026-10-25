@@ -7,7 +7,7 @@ const compile = async (path) => (await transformWithOxc(readFileSync(new URL(pat
 const moduleUrl = (source) => `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`
 const imageUrl = moduleUrl(await compile('../src/labImage.ts'))
 const attachmentSource = (await compile('../src/labAttachment.ts')).replace(/['"]\.\/labImage['"]/, JSON.stringify(imageUrl))
-const { prepareLabAttachment } = await import(moduleUrl(attachmentSource))
+const { prepareLabAttachment, mergeLabAttachments, attachmentBytes } = await import(moduleUrl(attachmentSource))
 const source = 'void setup() {}\nvoid loop() {\n  delay(5000);\n}\n'
 const result = await prepareLabAttachment(new File([source], 'teste.ino', { type: 'application/octet-stream' }))
 assert.equal(result.kind, 'code')
@@ -31,6 +31,25 @@ await assert.rejects(prepareLabAttachment(new File(['texto'], 'falso.pdf')), /PD
 await assert.rejects(prepareLabAttachment(new File(['%PDF-1.4\ntruncado'], 'incompleto.pdf')), /PDF completo/)
 await assert.rejects(prepareLabAttachment(new File([new Uint8Array(2 * 1024 * 1024 + 1)], 'grande.pdf')), /2 MB/)
 console.log('PDF: identificação, envelope, conteúdo integral e limite de 2 MB aprovados.')
+
+const imageAttachment = { kind: 'image', name: 'esquema.png', image: 'data:image/png;base64,iVBORw0KGgo=' }
+const originals = [preparedPdf]
+const combined = mergeLabAttachments(originals, [result, imageAttachment])
+assert.equal(combined.length, 3)
+assert.equal(originals.length, 1)
+assert.equal(attachmentBytes(result), Buffer.byteLength(source))
+assert.equal(attachmentBytes(preparedPdf), Buffer.byteLength(pdfEnvelope))
+assert.equal(attachmentBytes(imageAttachment), 8)
+assert.throws(() => mergeLabAttachments(originals, [preparedPdf]), /arquivo de cada tipo/)
+assert.throws(() => mergeLabAttachments(combined, [result]), /até três/)
+const fullPdfBytes = Buffer.alloc(2 * 1024 * 1024, 32)
+fullPdfBytes.write('%PDF-1.4\n')
+fullPdfBytes.write('%%EOF\n', fullPdfBytes.length - 6)
+const fullPdf = await prepareLabAttachment(new File([fullPdfBytes], 'limite.pdf'))
+assert.equal(mergeLabAttachments([], [fullPdf]).length, 1)
+assert.throws(() => mergeLabAttachments([fullPdf], [result]), /juntos devem ter até 2 MB/)
+assert.deepEqual(originals, [preparedPdf])
+console.log('Anexos conjuntos: seleção incremental, tipos únicos, limite total e preservação da seleção aprovados.')
 
 const { responseText, conversationText } = await import(moduleUrl(await compile('../src/conversationExport.ts')))
 const answer = { role: 'assistant', content: 'Botão pressionado = LOW.\nUse debounce.', code: 'void loop() {\n  ler_botao();\n}\n' }

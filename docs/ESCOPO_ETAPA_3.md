@@ -12,6 +12,7 @@ Transformar a conversa do Nino em uma ferramenta de trabalho para eletrônica, m
 - Limites e saneamento independentes para cada campo antes de chegar ao modelo.
 - Interface responsiva com o Nino e as expressões sempre visíveis acima da conversa.
 - Anexo PDF de até 2 MB no botão unificado, com consulta por perguntas, orientação de referências por página e erros de leitura/tamanho.
+- Consulta cruzada: uma imagem, um código e um PDF simultâneos, com limite conjunto de 2 MB após preparação e remoção individual.
 
 ## Critérios de validação
 
@@ -25,4 +26,4 @@ Transformar a conversa do Nino em uma ferramenta de trabalho para eletrônica, m
 
 - Casos de teste técnicos automatizados para respostas, segurança e continuidade.
 - Ampliar os casos de análise de esquemas: o usuário confirmou a análise de uma imagem; testes locais de formato e limites aprovados.
-- Validar a consulta a um datasheet PDF real e as páginas citadas. Leitura documental implementada; testes locais de transporte aprovados. O upload automatizado permanece bloqueado pela política do navegador.
+- Ampliar a validação da consulta cruzada com arquivos reais. O usuário confirmou a leitura de PDF; transporte combinado, limites e tipos aprovados localmente com serviço simulado. O upload automatizado permanece bloqueado pela política do navegador.

@@ -119,8 +119,8 @@ export default async function ninoChat(request, response) {
       sendJson(response, 400, { error: 'Não consegui ler o PDF. Use um documento completo, sem senha, ou exporte somente as páginas relevantes.' })
       return
     }
-    if (error instanceof TypeError && ['CODE_INVALID', 'ATTACHMENT_CONFLICT'].includes(error.message)) {
-      sendJson(response, 400, { error: 'Anexo inválido. Envie somente uma imagem, código/texto UTF-8 ou PDF.' })
+    if (error instanceof TypeError && error.message === 'CODE_INVALID') {
+      sendJson(response, 400, { error: 'Código inválido. Use um arquivo de texto UTF-8 em um formato aceito.' })
       return
     }
     if (error instanceof TypeError && error.message === 'IMAGE_INVALID') {
@@ -128,6 +128,10 @@ export default async function ninoChat(request, response) {
       return
     }
     if (error instanceof RangeError) {
+      if (error.message === 'ATTACHMENTS_TOO_LARGE') {
+        sendJson(response, 413, { error: 'Os anexos juntos devem ter até 2 MB após preparação. Reduza ou remova um dos arquivos.' })
+        return
+      }
       sendJson(response, 413, { error: error.message === 'PDF_TOO_LARGE' ? 'O PDF deve ter até 2 MB. Exporte somente as páginas relevantes.' : 'Mensagem ou anexo muito grande.' })
       return
     }

@@ -2,6 +2,10 @@
 
 ## Próxima atualização
 
+- Consulta cruzada com imagem, código e PDF na mesma pergunta; seleção múltipla/incremental e remoção individual pelo botão unificado.
+- Limite total de 2 MB após preparação, validado no navegador e servidor; seleção inválida preserva os anexos anteriores.
+- Nino orientado a confrontar fontes, conferir a identificação dos componentes e citar páginas do PDF.
+
 - Botão **+ Anexar** aceita PDF de até 2 MB para consultar datasheets, com identificação e tamanho antes do envio.
 - PDF acompanha perguntas seguintes até ser removido ou substituído; instruções pedem referência de arquivo/página e distinção entre valores típicos, recomendados e limites absolutos.
 - Limites, envelope PDF e construção da entrada documental cobertos por testes locais sem transmissão externa.

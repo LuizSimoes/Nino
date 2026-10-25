@@ -1871,6 +1871,12 @@ footer { display: none; }
 .chat-image-tools button { border: 1px solid #55536f; border-radius: 50%; background: transparent; color: #eee; min-width: 28px; height: 28px; cursor: pointer; }
 .chat-image-sent { max-width: 100%; max-height: 100px; object-fit: contain; align-self: flex-start; border-radius: 6px; }
 .chat-attachment-name { overflow-wrap: anywhere; min-width: 0; font-size: 10px; }
+.chat-attachments { display: grid; gap: 4px; flex-shrink: 0; max-height: 100px; overflow-y: auto; scrollbar-width: thin; }
+.chat-attachment-row { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border: 1px solid rgba(126,228,216,.18); border-radius: 7px; min-width: 0; }
+.chat-attachment-row > span { flex: 1; color: #d9d6e9; }
+.chat-attachment-row small { display: block; color: #a1a3ba; font-size: 9px; }
+.chat-attachment-row img { width: 28px; height: 28px; object-fit: contain; background: white; border-radius: 4px; }
+.chat-attachment-row button { flex: none; width: 26px; height: 26px; border: 1px solid #55536f; border-radius: 50%; background: transparent; color: #eee; cursor: pointer; }
 .chat-code-result { display: block; min-width: 0; max-width: 100%; margin-top: 8px; }
 .chat-code-result button { padding: 7px 10px; border: 1px solid #6b7990; border-radius: 7px; background: #20283d; color: #a3eee5; cursor: pointer; font: inherit; }
 .chat-code-result pre { max-width: 100%; overflow-x: auto; margin: 8px 0 0; padding: 10px; border-radius: 8px; background: #0b1020; color: #e5eef5; white-space: pre; font: 12px/1.5 ui-monospace, monospace; }

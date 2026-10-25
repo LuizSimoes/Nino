@@ -64,9 +64,9 @@ function realtimeVoicePlugin(apiKey: string): Plugin {
           response.end(JSON.stringify({ error: 'Não consegui ler o PDF. Use um documento completo, sem senha, ou exporte somente as páginas relevantes.' }))
           return
         }
-        if (error instanceof TypeError && ['CODE_INVALID', 'ATTACHMENT_CONFLICT'].includes(error.message)) {
+        if (error instanceof TypeError && error.message === 'CODE_INVALID') {
           response.statusCode = 400
-          response.end(JSON.stringify({ error: 'Anexo inválido. Use somente uma imagem, código/texto UTF-8 ou PDF.' }))
+          response.end(JSON.stringify({ error: 'Código inválido. Use um arquivo de texto UTF-8 em um formato aceito.' }))
           return
         }
         if (error instanceof TypeError && error.message === 'IMAGE_INVALID') {
@@ -76,6 +76,10 @@ function realtimeVoicePlugin(apiKey: string): Plugin {
         }
         if (error instanceof RangeError) {
           response.statusCode = 413
+          if (error.message === 'ATTACHMENTS_TOO_LARGE') {
+            response.end(JSON.stringify({ error: 'Os anexos juntos devem ter até 2 MB após preparação. Reduza ou remova um dos arquivos.' }))
+            return
+          }
           response.end(JSON.stringify({ error: 'Anexo muito grande. Use PDF até 2 MB, código até 64 KB/24 mil caracteres ou uma imagem menor.' }))
           return
         }
