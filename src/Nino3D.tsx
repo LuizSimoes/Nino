@@ -218,17 +218,22 @@ export function Nino3D({ mood, look, speaking, speechBeat, speechLevel, fallback
     renderer.setClearColor(0x000000, 0)
     renderer.outputColorSpace = THREE.SRGBColorSpace
     renderer.toneMapping = THREE.ACESFilmicToneMapping
-    renderer.toneMappingExposure = 1.08
+    renderer.toneMappingExposure = 0.82
+    renderer.shadowMap.enabled = true
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap
     host.appendChild(renderer.domElement)
 
-    scene.add(new THREE.HemisphereLight(0xfff4cf, 0x203044, 2.4))
-    const key = new THREE.DirectionalLight(0xffe4af, 4.2)
-    key.position.set(-4, 7, 8)
+    scene.add(new THREE.HemisphereLight(0xffe7b0, 0x182238, 1.15))
+    const key = new THREE.DirectionalLight(0xffd58a, 2.55)
+    key.position.set(-4.5, 7, 8)
+    key.castShadow = true
+    key.shadow.mapSize.set(1024, 1024)
+    key.shadow.bias = -0.0002
     scene.add(key)
-    const fill = new THREE.DirectionalLight(0x8eeeff, 2.6)
+    const fill = new THREE.DirectionalLight(0x8edee8, 0.72)
     fill.position.set(5, 3, 4)
     scene.add(fill)
-    const rim = new THREE.DirectionalLight(0x9b8cff, 2.1)
+    const rim = new THREE.DirectionalLight(0x9b8cff, 0.95)
     rim.position.set(0, 5, -6)
     scene.add(rim)
 
@@ -257,8 +262,8 @@ export function Nino3D({ mood, look, speaking, speechBeat, speechLevel, fallback
         let eyeRight: MorphMesh | null = null
         model.traverse((object) => {
           if (object instanceof THREE.Mesh) {
-            object.castShadow = false
-            object.receiveShadow = false
+            object.castShadow = true
+            object.receiveShadow = true
             object.frustumCulled = false
             const candidate = object as MorphMesh
             if (candidate.morphTargetDictionary?.jaw_open !== undefined) mouth = candidate
