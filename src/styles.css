@@ -1452,6 +1452,23 @@ footer { display: none; }
 .dog-reaction-icons--confused text:first-child { font-size: 29px; }
 .dog-reaction-icons--comforting text { font-size: 21px; }
 .dog-reaction-icons--proud text { font-size: 23px; }
+.dog-math-wave text {
+  fill: var(--face-accent);
+  stroke: rgba(255,255,255,.24);
+  stroke-width: 1;
+  paint-order: stroke fill;
+  font: 900 23px/1 ui-rounded, system-ui, sans-serif;
+  filter: url(#dogSoftGlow);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mathWave 2.45s cubic-bezier(.2,.72,.28,1) infinite;
+  will-change: opacity, transform;
+}
+.dog-math-wave text:nth-child(2) { animation-delay: .32s; }
+.dog-math-wave text:nth-child(3) { animation-delay: .64s; }
+.dog-math-wave text:nth-child(4) { animation-delay: .96s; }
+.dog-math-wave text:nth-child(5) { animation-delay: 1.28s; }
 .dog-thoughts circle { fill: rgba(170,164,255,.2); stroke: var(--face-accent); stroke-width: 3; filter: url(#dogSoftGlow); }
 .dog-sleep text { fill: var(--face-accent); font: 800 23px ui-monospace, monospace; animation: sleepZ 1.8s ease-in-out infinite; }
 .dog-sleep text:nth-child(2) { animation-delay: .24s; }
@@ -1461,6 +1478,12 @@ footer { display: none; }
 @keyframes dogSleep { 0%,100% { transform: translateY(3px) rotate(.6deg); } 50% { transform: translateY(7px) rotate(-.6deg) scale(1.01,.99); } }
 @keyframes dogWag { from { transform: rotate(-11deg); } to { transform: rotate(9deg); } }
 @keyframes reactionIcon { from { opacity: .55; transform: translateY(2px) scale(.86); } to { opacity: 1; transform: translateY(-2px) scale(1.08); } }
+@keyframes mathWave {
+  0%, 12% { opacity: 0; transform: translateY(8px) scale(.38); }
+  30% { opacity: .95; transform: translateY(1px) scale(.82); }
+  58% { opacity: 1; transform: translateY(-7px) scale(1.12); }
+  86%, 100% { opacity: 0; transform: translateY(-20px) scale(1.72); }
+}
 @keyframes dogSignal {
   from { opacity: 0; transform: scale(.45); transform-origin: 160px 258px; }
   to { opacity: 1; transform: scale(1); transform-origin: 160px 258px; }

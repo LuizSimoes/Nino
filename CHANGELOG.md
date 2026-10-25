@@ -5,6 +5,8 @@
 - Fala literal reforçada para evitar complementos improvisados.
 - Sincronização da boca preservada em falas longas até o áudio terminar de fato.
 - Novos símbolos ambientais para Curioso, Concentrado, Confuso, Acolhedor e Orgulhoso.
+- Concentrado agora exibe `+`, `−`, `×`, `÷` e `√` em ondas que avançam e desaparecem.
+- Anatomia atual das orelhas mantida por decisão de design.
 - Primeiro teste de usuário registrado em `docs/FEEDBACK_TESTES.md`.
 
 ## 0.1.0 — Primeiro Contato
