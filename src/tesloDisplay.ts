@@ -1,5 +1,7 @@
 import type { NinoChatMood } from './ninoChat'
 
+export const tesloModelUrl = '/models/teslo-v3.glb'
+
 export const tesloSignals: Record<NinoChatMood, string> = {
   presente: 'Linha de repouso', curioso: 'Interrogação', animado: 'Lâmpada',
   pensando: 'Equações complexas', cochilando: 'Desligado', concentrado: 'Ondas senoidais',

@@ -14,7 +14,7 @@ for (const [stored, expected] of [[null,'nino'],['bad','nino'],['nino','nino'],[
 globalThis.localStorage = { getItem() { throw new Error('blocked') } }
 assert.equal(storedAppearance(), 'nino')
 delete globalThis.localStorage
-const { tesloSignals, drawTesloDisplay, tesloJawAngle } = await compile('../src/tesloDisplay.ts')
+const { tesloSignals, drawTesloDisplay, tesloJawAngle, tesloModelUrl } = await compile('../src/tesloDisplay.ts')
 assert.equal(Object.keys(tesloSignals).length, 9)
 assert.match(tesloSignals.pensando,/Equações/)
 assert.match(tesloSignals.concentrado,/senoidais/)
@@ -31,7 +31,7 @@ for (const mood of Object.keys(tesloSignals)) {
   assert.ok(tesloJawAngle(true,1,100,mood)<=.28,'Limite mecanico')
 }
 assert.equal(tesloJawAngle(false,1,100,'presente'),0)
-const bytes = readFileSync(new URL('../public/models/teslo-v2.glb',import.meta.url))
+const bytes = readFileSync(new URL(`../public${tesloModelUrl}`,import.meta.url))
 assert.equal(bytes.toString('utf8',0,4),'glTF')
 assert.ok(bytes.length < 3*1024*1024)
 const gltf=JSON.parse(bytes.subarray(20,20+bytes.readUInt32LE(12)))

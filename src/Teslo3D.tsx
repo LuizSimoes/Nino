@@ -3,7 +3,7 @@ import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import type { NinoChatMood } from './ninoChat'
-import { drawTesloDisplay, tesloJawAngle, tesloSignals } from './tesloDisplay'
+import { drawTesloDisplay, tesloJawAngle, tesloModelUrl, tesloSignals } from './tesloDisplay'
 
 type Props = { mood: NinoChatMood; gaze: 'esquerda' | 'centro' | 'direita'; blinking: boolean; look: { x: number; y: number } | null; speaking: boolean; speechLevel: { current: number }; onUseNino: () => void }
 type MorphMesh = THREE.Mesh & { morphTargetDictionary?: Record<string, number>; morphTargetInfluences?: number[] }
@@ -69,7 +69,7 @@ export default function Teslo3D(props: Props) {
     const observer = new ResizeObserver(resize); observer.observe(container); resize()
     const contextLost = (event: Event) => { event.preventDefault(); lost = true; setStatus('failed') }
     renderer.domElement.addEventListener('webglcontextlost', contextLost)
-    new GLTFLoader().load('/models/teslo-v2.glb', (gltf) => {
+    new GLTFLoader().load(tesloModelUrl, (gltf) => {
       if (stopped) { disposeModel(gltf.scene); return }
       model = gltf.scene; scene.add(model)
       head = model.getObjectByName('Head_Pivot'); jaw = model.getObjectByName('Jaw_Pivot')

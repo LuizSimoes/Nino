@@ -2,6 +2,8 @@
 
 ## Próxima atualização
 
+- Teslo v3: 16 painéis com superfícies curvas e bordas arredondadas, encaixes cerâmicos dos olhos, lentes proporcionais com detalhes radiais e circuitos menos saturados. Geometria anterior preservada; controles, telas, voz e conversa inalterados.
+
 - Seletor de aparência Nino/Teslo com escolha local, sem reiniciar conversa, voz, anexos, contexto ou rascunho. Nome exibido acompanha o visual; cérebro e perfis de voz não mudam.
 - Prévia 3D de Teslo carregada sob demanda, com nove sinais nas telas, quatro obturadores, olhar, mandíbula guiada pela amplitude do áudio e retorno explícito ao Nino caso WebGL falhe. Acabamento visual ainda em desenvolvimento.
 

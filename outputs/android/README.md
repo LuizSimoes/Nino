@@ -38,4 +38,16 @@ A integração experimental se chama **Teslo** e usa `public/models/teslo-v2.glb
 /Applications/Blender.app/Contents/MacOS/Blender --background --python-exit-code 1 --python blender/verify_android_v2.py
 ```
 
-Próximo marco: avaliar a troca Nino/Teslo em uso e continuar refinando a fidelidade visual ao conceito. A versão atual do cão permanece intacta.
+## Refinamento v3
+
+`refinement-v3/Teslo_v3_refinement.blend` preserva a hierarquia e as âncoras da versão anterior. Suaviza 16 painéis com malha curva, arredonda seus contornos, adiciona encaixes cerâmicos e detalhes radiais dos olhos. A redução das lentes inclui as duas formas dos quatro obturadores para preservar a cobertura no cochilo. Circuitos usam material mais escuro; ainda faltam acabamentos de fidelidade ao conceito.
+
+O modelo ativo passa a ser `public/models/teslo-v3.glb` (aproximadamente 1,5 MB). O GLB v2 continua preservado, mas não é carregado na interface. Voz, nove telas, ações e persistência de escolha não mudam.
+
+```sh
+/Applications/Blender.app/Contents/MacOS/Blender --background --python-exit-code 1 --python blender/build_teslo_v3.py
+/Applications/Blender.app/Contents/MacOS/Blender --background --python-exit-code 1 --python blender/verify_teslo_v3.py
+/Applications/Blender.app/Contents/MacOS/Blender --background --python-exit-code 1 --python blender/export_teslo_v2.py -- --v3
+```
+
+Próximo marco: avaliar o refinamento em uso e continuar aproximando a fidelidade visual ao conceito. A versão atual do cão permanece intacta.
