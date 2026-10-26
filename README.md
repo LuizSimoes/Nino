@@ -58,6 +58,10 @@ A rota publicada aceita somente `POST`, limita tamanho, origem e frequência bá
 
 ## Estado atual
 
+- O seletor **Visual → Nino / Teslo**, acima do personagem, troca somente a apresentação. Voz escolhida, personalidade, estado atual, conversa, anexos, rascunho e sessões não são reiniciados. Nino continua sendo o padrão quando não existe escolha salva; a preferência visual fica neste navegador, separada das sessões de bancada.
+- **Teslo** é a prévia 3D do segundo estudo geométrico do androide, ainda sem o acabamento realista da referência aprovada. O carregamento do componente e do modelo de aproximadamente 1,3 MB ocorre somente ao escolhê-lo. Requer WebGL; se falhar, um aviso permite retornar ao Nino. As nove telas são desenhadas no navegador, com equações em Pensando, ondas em Concentrado, ⏻ no Cochilo, coração no peito e medalha no Orgulhoso.
+- Teslo usa os mesmos sinais de áudio e estado do Nino para boca, piscar, cochilo e reações; o modelo é liberado ao voltar ao cão. O servidor e os perfis de voz permanecem inalterados. `npm run test:appearance` confere preferência, telas, silêncio/retomada e estrutura do modelo.
+
 - Respostas completas e selecionáveis na conversa, com **Copiar resposta** (explicação e código), **Copiar conversa** e **Baixar .txt**. A legenda do personagem é um resumo; quando a conversa estiver fechada, **Ver resposta completa na conversa** reabre o histórico.
 - O histórico exibido preserva todas as mensagens desta página; somente as oito últimas entram na próxima requisição. Sem salvamento explícito, conversa, anexos e rascunho são descartados ao recarregar. Novas respostas aparecem desde o início, e ferramentas/contexto ficam recolhidos para reservar espaço de leitura.
 - Sessões salvas usam IndexedDB no mesmo navegador e endereço do site. O salvamento é explícito, inclui anexos e não transmite dados ao servidor. Não há sincronização entre dispositivos; limpar os dados do site remove as sessões. Trocas de bancada com alterações não salvas exigem confirmação; exclusões de cópias salvas são permanentes e confirmadas, sem apagar a conversa aberta. Use a exportação `.txt` para uma cópia externa da conversa.

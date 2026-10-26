@@ -29,11 +29,13 @@ Os PNGs neutro/piscar/mandíbula são verificações técnicas, não propostas d
 
 `refinement-v2/Android_v2_refinement.blend` preserva o primeiro modelo e substitui seus blocos faciais por painéis moldados, contorno da mandíbula, monitor integrado, circuitos e quatro obturadores curvos (duas peças por olho). O quadro 30 exibe o sinal de desligado na testa e fecha as lentes. O quadro 60 exercita a mandíbula; o 90 retorna ao repouso. PNGs neutro/cochilo/mandíbula acompanham o arquivo.
 
-Ainda é uma aproximação geométrica simplificada: não possui o acabamento realista do conceito, nem as nove expressões completas, rastreamento de olhar, fala sincronizada, exportação final ou seletor no site. Formas e silhueta precisam de nova avaliação antes de declarar a aparência pronta.
+Ainda é uma aproximação geométrica simplificada: não possui o acabamento realista do conceito. Formas e silhueta precisam de nova avaliação antes de declarar a aparência pronta.
+
+A integração experimental se chama **Teslo** e usa `public/models/teslo-v2.glb`, gerado por `blender/export_teslo_v2.py`. O runtime `src/Teslo3D.tsx` controla as nove telas, inclinação, obturadores, olhar e mandíbula a partir do estado/áudio existentes. O arquivo Blender preserva seus testes de articulação; as outras telas e poses são controladas pelo navegador, não por imagens estáticas nem animações prontas embutidas no GLB.
 
 ```sh
 /Applications/Blender.app/Contents/MacOS/Blender --background --python-exit-code 1 --python blender/build_android_v2.py
 /Applications/Blender.app/Contents/MacOS/Blender --background --python-exit-code 1 --python blender/verify_android_v2.py
 ```
 
-Próximo marco: avaliar o segundo estudo e continuar refinando a fidelidade ao conceito antes de integrar a troca Cão/Androide. A versão atual do cão permanece intacta.
+Próximo marco: avaliar a troca Nino/Teslo em uso e continuar refinando a fidelidade visual ao conceito. A versão atual do cão permanece intacta.

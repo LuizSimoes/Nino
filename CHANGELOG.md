@@ -2,6 +2,9 @@
 
 ## Próxima atualização
 
+- Seletor de aparência Nino/Teslo com escolha local, sem reiniciar conversa, voz, anexos, contexto ou rascunho. Nome exibido acompanha o visual; cérebro e perfis de voz não mudam.
+- Prévia 3D de Teslo carregada sob demanda, com nove sinais nas telas, quatro obturadores, olhar, mandíbula guiada pela amplitude do áudio e retorno explícito ao Nino caso WebGL falhe. Acabamento visual ainda em desenvolvimento.
+
 - Segundo estudo 3D do androide: painéis faciais moldados, circuitos detalhados, monitor com sinal de repouso/desligado e obturadores curvos com controles de fechamento. Arquivo anterior e personagem publicado preservados; acabamento e integração continuam pendentes.
 
 - Conceito alternativo do androide e nove expressões aprovadas preservados no projeto, sem substituir o cão na interface.

@@ -1625,6 +1625,18 @@ footer { display: none; }
   animation: none;
 }
 
+/* A escolha visual fica no fluxo; não recria a conversa nem a voz. */
+.appearance-picker { display: flex; align-items: center; justify-content: center; gap: 6px; flex: none; max-width: 100%; padding: 3px; border: 1px solid #393956; border-radius: 12px; background: #14172a; }
+.appearance-picker > span { padding: 0 5px; color: #aaaabd; font: 600 11px/1.4 system-ui; }
+.appearance-picker button { border: 1px solid transparent; border-radius: 8px; padding: 5px 12px; min-height: 30px; color: #cccddd; background: transparent; font: 700 12px/1.2 system-ui; cursor: pointer; }
+.appearance-picker button[aria-pressed="true"] { color: #172639; background: linear-gradient(115deg,#99e9e0,#aaa1ff); }
+.appearance-picker button:focus-visible { outline: 2px solid #93ede3; outline-offset: 2px; }
+.nino-3d--teslo { aspect-ratio: 1 / 1.16; }
+.teslo-avatar, .teslo-canvas { position: absolute; inset: 0; }
+.teslo-canvas canvas { display: block; width: 100%; height: 100%; }
+.teslo-status { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; padding: 12px; color: #c9dfdc; font: 600 12px/1.5 system-ui; text-align: center; }
+.teslo-status button { padding: 8px 12px; background: #9ce5dc; color: #152c3b; border: 0; border-radius: 8px; cursor: pointer; }
+
 .nino-3d-loading {
   position: absolute;
   left: 50%;

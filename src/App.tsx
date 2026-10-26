@@ -1,10 +1,13 @@
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { NinoRealtimeVoice } from './realtimeVoice'
 import { askNino, type NinoChatMessage } from './ninoChat'
 import { prepareLabAttachment, mergeLabAttachments, attachmentBytes, attachmentAccept, type LabAttachment } from './labAttachment'
 import { responseText, conversationText, downloadConversation } from './conversationExport'
 import { LabSessionsPanel } from './LabSessionsPanel'
 import type { LabSnapshot } from './labSessions'
+import { appearanceKey, storedAppearance, type Appearance } from './appearance'
+
+const Teslo3D = lazy(() => import('./Teslo3D'))
 
 type NinoMood = 'presente' | 'curioso' | 'animado' | 'pensando' | 'cochilando' | 'concentrado' | 'confuso' | 'acolhedor' | 'orgulhoso'
 type Gaze = 'esquerda' | 'centro' | 'direita'
@@ -708,6 +711,11 @@ function CopyTextButton({ text, label }: { text: string; label: string }) {
 }
 
 function App() {
+  const [appearance, setAppearance] = useState<Appearance>(storedAppearance)
+  const characterName = appearance === 'teslo' ? 'Teslo' : 'Nino'
+  useEffect(() => {
+    try { localStorage.setItem(appearanceKey, appearance) } catch { /* Troca continua disponível sem persistência. */ }
+  }, [appearance])
   const [mood, setMood] = useState<NinoMood>('presente')
   const [gaze, setGaze] = useState<Gaze>('centro')
   const [blinking, setBlinking] = useState(false)
@@ -1004,10 +1012,10 @@ function App() {
   return (
     <main className={`app-shell ${chatOpen ? 'app-shell--chat-open' : ''} ${chatOpen || voiceLabOpen ? 'app-shell--panel-open' : ''}`}>
       <header className="topbar">
-        <a className="brand" href="#inicio" aria-label="Nino, início">
-          <span className="brand-mark" aria-hidden="true">N</span>
+        <a className="brand" href="#inicio" aria-label={`${characterName}, início`}>
+          <span className="brand-mark" aria-hidden="true">{appearance === 'teslo' ? 'T' : 'N'}</span>
           <span>
-            <strong>NINO</strong>
+            <strong>{characterName.toUpperCase()}</strong>
             <small>COMPANHEIRO DIGITAL</small>
           </span>
         </a>
@@ -1018,7 +1026,7 @@ function App() {
             className={`voice-toggle ${voiceOn ? 'voice-toggle--on' : ''}`}
             type="button"
             aria-pressed={voiceOn}
-            aria-label={voiceOn ? 'Desligar voz do Nino' : 'Ligar voz do Nino'}
+            aria-label={voiceOn ? `Desligar voz do ${characterName}` : `Ligar voz do ${characterName}`}
             title={voiceOn ? 'Voz ligada' : 'Voz desligada'}
             onClick={toggleVoice}
           >
@@ -1028,7 +1036,7 @@ function App() {
           <button
             className="voice-toggle voice-lab-trigger"
             type="button"
-            aria-label="Comparar vozes do Nino"
+            aria-label={`Comparar vozes do ${characterName}`}
             title="Comparar vozes"
             onClick={() => { setChatOpen(false); setSuggestionIndex(null); setFeedback(null); setVoiceLabOpen(true) }}
           >
@@ -1038,8 +1046,8 @@ function App() {
           <button
             className="voice-toggle chat-trigger"
             type="button"
-            aria-label="Conversar com o Nino"
-            title="Conversar com o Nino"
+            aria-label={`Conversar com o ${characterName}`}
+            title={`Conversar com o ${characterName}`}
             onClick={() => { setVoiceLabOpen(false); setSuggestionIndex(null); setFeedback(null); setChatOpen(true) }}
           >
             <StatusIcon kind="chat" />
@@ -1053,7 +1061,7 @@ function App() {
           <div className="voice-lab-heading">
             <div>
               <p>TESTE DE PERSONALIDADE</p>
-              <h2 id="voice-lab-title">Qual é a voz do Nino?</h2>
+              <h2 id="voice-lab-title">Qual é a voz do {characterName}?</h2>
             </div>
             <button type="button" aria-label="Fechar comparador de vozes" onClick={() => setVoiceLabOpen(false)}>×</button>
           </div>
@@ -1088,7 +1096,7 @@ function App() {
           <div className="chat-lab-heading">
             <div>
               <p>COPILOTO DE LABORATÓRIO</p>
-              <h2 id="chat-lab-title">Converse com o Nino</h2>
+              <h2 id="chat-lab-title">Converse com o {characterName}</h2>
             </div>
             <button
               type="button"
@@ -1143,7 +1151,7 @@ function App() {
           <div className="chat-log" role="log" aria-live="polite" ref={chatLog}>
             {chatMessages.map((message, index) => (
               <div className={`chat-bubble chat-bubble--${message.role}`} key={`${message.role}-${index}`}>
-                <div className="chat-bubble-heading"><strong>{message.role === 'assistant' ? 'Nino' : 'Você'}</strong>
+                <div className="chat-bubble-heading"><strong>{message.role === 'assistant' ? characterName : 'Você'}</strong>
                   {message.role === 'assistant' && <CopyTextButton text={responseText(message)} label="Copiar resposta" />}
                 </div>
                 {message.image && <img className="chat-image-sent" src={message.image} alt="Imagem enviada da bancada" />}
@@ -1199,7 +1207,7 @@ function App() {
               }}
               rows={2}
               placeholder="Pergunte sobre o circuito, código ou datasheet…"
-              aria-label="Mensagem para o Nino"
+              aria-label={`Mensagem para o ${characterName}`}
             />
             <button type="submit" disabled={chatLoading || imagePreparing || chatInput.length > 4000 || (!chatInput.trim() && !attachments.length)} aria-label="Enviar mensagem">↑</button>
           </form>
@@ -1209,7 +1217,7 @@ function App() {
       <section className="hero" id="inicio">
         <div className="intro-copy">
           <p className="kicker"><span /> PRESENÇA ATIVA</p>
-          <h1>Olá, eu sou<br /><em>Nino.</em></h1>
+          <h1>Olá, eu sou<br /><em>{characterName}.</em></h1>
           <p className="lead">
             Seu copiloto de laboratório para circuitos, microcontroladores, firmware e protótipos.
           </p>
@@ -1231,11 +1239,16 @@ function App() {
           onPointerLeave={() => setLookOffset(null)}
           aria-live="polite"
         >
+          <div className="appearance-picker" role="group" aria-label="Aparência do assistente">
+            <span>Visual</span>
+            <button type="button" aria-pressed={appearance === 'nino'} onClick={() => setAppearance('nino')}>Nino</button>
+            <button type="button" aria-pressed={appearance === 'teslo'} onClick={() => setAppearance('teslo')}>Teslo</button>
+          </div>
           <div className="ambient ambient--one" />
           <div className="ambient ambient--two" />
           <div className="mood-aura" aria-hidden="true" />
-          <div className={`nino-3d nino-illustrated ${speaking ? 'nino-illustrated--speaking' : ''}`}>
-            <NinoFace
+          <div className={`nino-3d ${appearance === 'teslo' ? 'nino-3d--teslo' : 'nino-illustrated'} ${speaking ? 'nino-illustrated--speaking' : ''}`}>
+            {appearance === 'teslo' ? <Suspense fallback={<span className="teslo-status">Preparando Teslo…</span>}><Teslo3D mood={mood} gaze={gaze} blinking={blinking} look={lookOffset} speaking={speaking} speechLevel={speechLevel} onUseNino={() => setAppearance('nino')} /></Suspense> : <NinoFace
               key={mood}
               mood={mood}
               gaze={gaze}
@@ -1243,7 +1256,7 @@ function App() {
               look={lookOffset}
               speaking={speaking}
               speechLevel={speechLevel}
-            />
+            />}
           </div>
           <div className={moreOpen ? 'nino-caption nino-caption--raised' : 'nino-caption'}>
             <span className="caption-indicator" />
@@ -1251,7 +1264,7 @@ function App() {
           </div>
           {conversationCaption && !chatOpen && <button className="caption-review" type="button" onClick={() => { setVoiceLabOpen(false); setChatOpen(true); setFeedback(null); setSuggestionIndex(null) }}>Ver resposta completa na conversa</button>}
           {moreOpen && (
-            <div className="expression-more" id="mais-expressoes" role="group" aria-label="Mais expressões do Nino">
+            <div className="expression-more" id="mais-expressoes" role="group" aria-label={`Mais expressões do ${characterName}`}>
               {extraExpressionOptions.map((option) => (
                 <button
                   type="button"
@@ -1266,7 +1279,7 @@ function App() {
               ))}
             </div>
           )}
-          <div className="expression-controls" role="group" aria-label="Expressões do Nino">
+          <div className="expression-controls" role="group" aria-label={`Expressões do ${characterName}`}>
             {expressionOptions.map((option) => (
               <button
                 type="button"
@@ -1290,19 +1303,19 @@ function App() {
               Mais
             </button>
           </div>
-          {feedback && <div className="feedback-inline" role="status"><span>{feedback}</span><button type="button" onClick={() => setFeedback(null)} aria-label="Fechar aviso">×</button></div>}
+          {feedback && <div className="feedback-inline" role="status"><span>{feedback.replaceAll('Nino', characterName)}</span><button type="button" onClick={() => setFeedback(null)} aria-label="Fechar aviso">×</button></div>}
         </div>
 
         <div className={`control-panel ${suggestion && intuitionOn ? 'control-panel--suggestion' : ''}`} aria-label="Painel de demonstração">
           {suggestion && intuitionOn ? (
-            <div className="intuition-inline" aria-live="polite" aria-label="Sugestão do Nino">
+            <div className="intuition-inline" aria-live="polite" aria-label={`Sugestão do ${characterName}`}>
               <div className="intuition-inline-head">
                 <span className="spark">✦</span>
-                <span>PALPITE DO NINO</span>
+                <span>PALPITE DO {characterName.toUpperCase()}</span>
                 <button type="button" aria-label="Fechar sugestão" onClick={dismissSuggestion}>×</button>
               </div>
               <p>{suggestion.eyebrow}</p>
-              <h2>{suggestion.title}</h2>
+              <h2>{suggestion.title.replaceAll('Nino', characterName)}</h2>
               <small>{suggestion.detail}</small>
               <div className="intuition-inline-actions">
                 <button type="button" onClick={handleSuggestionAction}>{suggestion.action}</button>
